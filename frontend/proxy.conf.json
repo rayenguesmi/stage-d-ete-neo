@@ -1,0 +1,13 @@
+{
+  "/api/*": {
+    "target": "http://localhost:8082/",
+    "secure": false,
+    "headers": {
+      "Access-Control-Allow-Origin": "*"
+    },
+    "pathRewrite": {
+      "^/api": ""
+    },
+    "changeOrigin": true
+  }
+}

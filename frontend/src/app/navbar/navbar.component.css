@@ -1,0 +1,69 @@
+.navbar-container {
+  width: 250px; /* Largeur par défaut de la barre latérale */
+  height: 100vh; /* Prend toute la hauteur de la fenêtre */
+  background-color: #004b8d; /* Couleur de fond */
+  color: white; /* Texte blanc */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+  transition: width 0.3s ease; /* Animation pour les transitions de largeur */
+  display: flex;
+  flex-direction: column; /* Alignement vertical des éléments */
+  position: fixed; /* Fixe la barre latérale à gauche */
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+.navbar-container.full-width {
+  margin-left: 50px; /* Ajuste la largeur lorsque la barre latérale est réduite */
+}
+
+.navbar-container.collapsed {
+  width: 50px;
+}
+.menu-container.menu-hidden {
+  overflow: hidden; /* Cache le contenu lorsque le menu est réduit */
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-list li {
+  margin: 10px 0;
+}
+
+.menu-list li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #003366; /* Couleur de fond des items */
+  padding: 10px;
+  border-radius: 8px; /* Coins arrondis */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.menu-list li a:hover {
+  background-color: #002244; /* Fond sombre au survol */
+  transform: scale(1.05); /* Zoom léger */
+}
+
+.menu-list li a i {
+  margin-right: 10px;
+}
+.menu-list li a.active {
+  background-color: #001122; /* Couleur différente pour l'actif */
+  font-weight: bold;
+}
+
+/* Logo */
+.logo-container img {
+  display: block;
+  margin: 0 auto;
+  width: 100px; /* Ajustez la taille selon vos besoins */
+  height: auto;
+  border-radius: 50%; /* Cela masque les coins blancs si l'image dépasse */
+  background: transparent; /* Assurez-vous que l'arrière-plan reste transparent */
+}
