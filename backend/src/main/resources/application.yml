@@ -1,6 +1,9 @@
 server:
   port: 8090
-
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.cors: DEBUG
 keycloak:
   url: http://localhost:8082
   realm: Neo_TM
@@ -11,6 +14,13 @@ spring:
       database: Neo_TM_DB
       host: localhost
       port: 27017
+      uri: mongodb://localhost:27017/donnes_authentification
+
+  servlet:
+    multipart:
+
+      max-file-size: 50MB
+      max-request-size: 50MB
   security:
     oauth2:
       client:
@@ -28,4 +38,5 @@ spring:
             authorization-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/auth
             user-info-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
             jwk-set-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
 
