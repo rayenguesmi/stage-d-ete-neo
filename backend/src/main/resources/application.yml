@@ -3,7 +3,10 @@ server:
 logging:
   level:
     org.springframework.web: DEBUG
+    org.apache.tomcat: DEBUG
     org.springframework.web.cors: DEBUG
+    org.springframework.data: DEBUG
+    org.springframework.boot.autoconfigure.web: TRACE
 keycloak:
   url: http://localhost:8082
   realm: Neo_TM
@@ -14,14 +17,15 @@ spring:
       database: Neo_TM_DB
       host: localhost
       port: 27017
-      uri: mongodb://localhost:27017/donnes_authentification
+      uri: mongodb://localhost:27017/donnes_authentifications
 
   servlet:
     multipart:
-
-      max-file-size: 50MB
+      enabled: true
+      max-file-size: 20MB
       max-request-size: 50MB
   security:
+    filter-dispatcher-types: async, error, request
     oauth2:
       client:
         registration:

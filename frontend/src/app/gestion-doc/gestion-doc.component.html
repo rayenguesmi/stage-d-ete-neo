@@ -26,19 +26,13 @@
     (change)="onFileSelected($event)"
   />
 
-  <!-- Bouton pour télécharger les fichiers -->
-
   <!-- Message informatif sur les permissions -->
   <div class="mt-3 alert alert-info">
     <p>{{ message }}</p>
   </div>
 
   <!-- Télécharger le PDF si l'utilisateur a le rôle -->
-  <button
-    *ngIf="hasPdfRole"
-    class="btn btn-secondary mt-3"
-    (click)="downloadPdf()"
-  >
+  <button *ngIf="hasPdfRole" class="btn btn-secondary mt-3">
     <i class="fas fa-file-pdf"></i> Télécharger PDF
   </button>
 
@@ -49,11 +43,7 @@
   </button>
 
   <!-- Télécharger le CSV si l'utilisateur a le rôle -->
-  <button
-    *ngIf="hasCsvRole"
-    class="btn btn-secondary mt-3"
-    (click)="downloadCsv()"
-  >
+  <button *ngIf="hasCsvRole" class="btn btn-secondary mt-3">
     <i class="fas fa-file-csv"></i> Télécharger CSV
   </button>
 

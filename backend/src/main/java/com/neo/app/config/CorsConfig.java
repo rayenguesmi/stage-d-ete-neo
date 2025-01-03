@@ -8,13 +8,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        // Permettre les requêtes CORS pour localhost:4200
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:4200")  // Remplacez avec l'URL de votre frontend
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // Autorise certaines méthodes HTTP
-                .allowedHeaders("*")  // Autorise tous les en-têtes
-                .allowCredentials(true);  // Permet l'envoi de cookies si nécessaire
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:4200")  // Assurez-vous que l'origine est correctement définie
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .maxAge(3600);  // Pour éviter des requêtes `OPTIONS` répétées, indiquez un délai d'expiration
+            }
+
+        };
     }
 }

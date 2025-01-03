@@ -1,78 +1,69 @@
 package com.neo.app.service;
+
+import com.neo.app.repository.DocumentRepository;
+import com.neo.app.documents.DocumentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.neo.app.repository.DocumentRepository;
-import com.neo.app.documents.DocumentEntity;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.security.Key;
+import java.util.Date;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.UUID;
 
 @Service
 public class DocumentService {
 
     @Autowired
     private DocumentRepository documentRepository;
+    private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
+    private static final String AES = "AES";  // Algorithme de cryptage
+    private static final String SECRET_KEY = "1234567890123456"; // 16 bytes pour AES-128
 
     // Sauvegarder un document
-    public void saveDocument(MultipartFile file) throws IOException {
-        byte[] data = file.getBytes();  // Convertir le fichier en byte[]
+    public void saveDocument(MultipartFile file) throws Exception {
+        try {
+            // Convertir le fichier en tableau de bytes
+            byte[] data = file.getBytes();
 
-        // Créer un objet DocumentEntity
-        DocumentEntity document = new DocumentEntity();
-        document.setFilename(file.getOriginalFilename());
-        document.setFiletype(file.getContentType());
-        document.setUploadDate(new Date());  // Date actuelle pour l'upload
-        document.setData(data);
+            // Crypter le fichier
+            byte[] encryptedData = encrypt(data);
 
-        // Sauvegarder le document dans MongoDB
-        documentRepository.save(document);
+            // Créer un objet DocumentEntity pour stocker les informations sur le fichier
+            DocumentEntity document = new DocumentEntity();
+            document.setFilename(file.getOriginalFilename());
+            document.setFiletype(file.getContentType());
+            document.setUploadDate(new Date());
+            document.setData(encryptedData);
+
+            // Sauvegarder le document crypté dans la base de données MongoDB
+            documentRepository.save(document);
+        } catch (IOException e) {
+            logger.error("Erreur lors de la lecture du fichier", e);
+            throw new Exception("Erreur lors de la lecture du fichier", e);
+        }
+    }
+
+    // Récupérer un document par ID
+    public DocumentEntity getDocumentById(UUID id) {
+        return documentRepository.findById(id.toString()).orElse(null);
+    }
+
+    // Méthode pour crypter les données
+    private byte[] encrypt(byte[] data) throws Exception {
+        Key key = new SecretKeySpec(SECRET_KEY.getBytes(), AES);
+        Cipher cipher = Cipher.getInstance(AES);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(data);
     }
 
     // Récupérer tous les documents
     public List<DocumentEntity> getAllDocuments() {
         return documentRepository.findAll();
     }
-
-
-
-    public List<Map<String, Object>> getFilesTree() {
-        List<DocumentEntity> documents = documentRepository.findAll();
-
-
-        Map<String, List<DocumentEntity>> groupedByType = documents.stream()
-                .collect(Collectors.groupingBy(doc -> {
-                    if ("text/csv".equals(doc.getFiletype())) return "CSV";
-                    if ("application/xml".equals(doc.getFiletype())) return "XML";
-                    if ("text/xml".equals(doc.getFiletype())) return "XML";
-                    if ("application/pdf".equals(doc.getFiletype())) return "PDF";
-                    return "Other";
-                }));
-
-
-        List<Map<String, Object>> treeStructure = new ArrayList<>();
-        groupedByType.forEach((type, docs) -> {
-            Map<String, Object> parentNode = new HashMap<>();
-            parentNode.put("name", type);
-            parentNode.put("children", docs.stream().map(doc -> {
-                Map<String, Object> childNode = new HashMap<>();
-                childNode.put("name", doc.getFilename());
-                childNode.put("type", doc.getFiletype());
-                childNode.put("uploadDate", formatDate(doc.getUploadDate()));
-                return childNode;
-            }).collect(Collectors.toList()));
-            treeStructure.add(parentNode);
-        });
-
-        return treeStructure;
-    }
-
-
-    private String formatDate(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return date != null ? formatter.format(date) : "Unknown date";
-    }
 }
-

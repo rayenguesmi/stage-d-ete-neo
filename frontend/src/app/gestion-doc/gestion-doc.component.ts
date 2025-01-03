@@ -15,14 +15,17 @@ export class GestionDocComponent implements OnInit {
   hasCsvRole: boolean = false;
   hasXmlRole: boolean = false;
   message: string = ''; // Message à afficher sur la page HTML
+  userId: string | null = null; // ID de l'utilisateur
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    console.log('Component initialized');
     this.extractRolesFromToken(); // On extrait les rôles lors de l'initialisation
+    this.getUserFiles(); // Récupérer les fichiers dès le départ si l'utilisateur est authentifié
   }
 
-  // Extraction des rôles à partir du token JWT
+  // Extraction des rôles et de l'ID de l'utilisateur à partir du token JWT
   extractRolesFromToken() {
     const token = localStorage.getItem('token');
     console.log('Token:', token); // Affichage du token dans la console
@@ -42,10 +45,8 @@ export class GestionDocComponent implements OnInit {
       );
 
       if (userRoles.length > 0) {
-        // Si des rôles valides sont trouvés, on les assigne à `this.roles`
         this.roles = userRoles;
       } else {
-        // Si aucun rôle valide n'est trouvé
         this.roles = [];
       }
 
@@ -53,6 +54,10 @@ export class GestionDocComponent implements OnInit {
       this.hasPdfRole = this.roles.includes('ROLE_PDF');
       this.hasCsvRole = this.roles.includes('ROLE_CSV');
       this.hasXmlRole = this.roles.includes('ROLE_XML');
+
+      // Extraction de l'ID de l'utilisateur à partir du token
+      this.userId = payload?.sub; // 'sub' contient l'ID de l'utilisateur
+      console.log("ID de l'utilisateur extrait:", this.userId);
 
       this.setMessage(); // Mise à jour du message en fonction des rôles
     } else {
@@ -99,6 +104,8 @@ export class GestionDocComponent implements OnInit {
           );
         }
       }
+      console.log('Fichiers après dépôt:', this.uploadedFiles); // Vérification
+      this.uploadFiles(); // Appel de l'upload après le dépôt
     }
   }
 
@@ -128,6 +135,8 @@ export class GestionDocComponent implements OnInit {
           );
         }
       }
+      console.log('Fichiers après sélection:', this.uploadedFiles); // Vérification
+      this.uploadFiles(); // Appel de l'upload après la sélection
     }
   }
 
@@ -160,20 +169,55 @@ export class GestionDocComponent implements OnInit {
     }
 
     const formData = new FormData();
+    console.log('Fichiers à uploader:', this.uploadedFiles); // Affiche les fichiers ajoutés
     this.uploadedFiles.forEach((file) => {
-      formData.append('file', file);
+      console.log('Ajout du fichier au FormData:', file.name); // Affiche chaque fichier ajouté
+      formData.append('file', file, file.name);
     });
 
+    // Vérifier la structure du FormData avant l'envoi
+    console.log('FormData avant envoi:', formData);
+
+    // Envoi de la requête HTTP avec le type de réponse en texte brut
     this.http
-      .post<{ message: string }>('http://localhost:9090/api/upload', formData)
+      .post<string>('http://localhost:8090/api/upload', formData, {
+        responseType: 'text' as 'json',
+      })
       .subscribe({
-        next: (response) => {
-          this.showPopupMessage(response.message, 'success');
-          this.uploadedFiles = []; // Réinitialiser la liste après le téléchargement
+        next: (response: string) => {
+          console.log('Réponse du serveur:', response); // Affiche la réponse du serveur (texte brut)
+          this.showPopupMessage(response, 'success'); // Affiche le message de succès
+
+          // Réinitialiser les fichiers pour la prochaine sélection
+          this.uploadedFiles = [];
         },
         error: (error) => {
-          console.error("Erreur lors de l'upload :", error);
-          this.showPopupMessage("Échec de l'upload.", 'error');
+          console.error("Erreur lors de l'upload:", error); // Affiche l'erreur du serveur
+          this.showPopupMessage("Échec de l'upload.", 'error'); // Affiche un message d'erreur
+        },
+      });
+  }
+
+  // Méthode pour récupérer la liste des fichiers depuis le backend
+  getUserFiles() {
+    if (!this.userId) {
+      this.showPopupMessage('Utilisateur non authentifié', 'error');
+      return;
+    }
+
+    this.http
+      .get<any[]>(`http://localhost:8090/api/files/${this.userId}`)
+      .subscribe({
+        next: (files) => {
+          console.log('Fichiers récupérés du serveur:', files);
+          this.uploadedFiles = files; // Met à jour la liste des fichiers avec ceux récupérés
+        },
+        error: (error) => {
+          console.error('Erreur lors de la récupération des fichiers:', error);
+          this.showPopupMessage(
+            'Erreur lors de la récupération des fichiers.',
+            'error'
+          );
         },
       });
   }
@@ -186,43 +230,5 @@ export class GestionDocComponent implements OnInit {
     this.popupMessage = `${type.toUpperCase()}: ${message}`;
     this.showPopup = true;
     setTimeout(() => (this.showPopup = false), 4000);
-  }
-
-  // Méthode pour télécharger un fichier PDF
-  downloadPdf() {
-    if (this.hasPdfRole) {
-      this.http
-        .get('your-api-endpoint/pdf', { responseType: 'blob' })
-        .subscribe(
-          (response: Blob) => {
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(response);
-            link.download = 'file.pdf';
-            link.click();
-          },
-          (error) => {
-            console.error('Erreur lors du téléchargement du PDF', error);
-          }
-        );
-    }
-  }
-
-  // Méthode pour télécharger un fichier CSV
-  downloadCsv() {
-    if (this.hasCsvRole) {
-      this.http
-        .get('your-api-endpoint/csv', { responseType: 'blob' })
-        .subscribe(
-          (response: Blob) => {
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(response);
-            link.download = 'file.csv';
-            link.click();
-          },
-          (error) => {
-            console.error('Erreur lors du téléchargement du CSV', error);
-          }
-        );
-    }
   }
 }
