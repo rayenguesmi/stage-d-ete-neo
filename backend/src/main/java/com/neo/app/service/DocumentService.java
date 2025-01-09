@@ -1,7 +1,7 @@
 package com.neo.app.service;
 
-import com.neo.app.repository.DocumentRepository;
 import com.neo.app.documents.DocumentEntity;
+import com.neo.app.repository.DocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,57 +13,57 @@ import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.UUID;
 
 @Service
 public class DocumentService {
 
     @Autowired
     private DocumentRepository documentRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
-    private static final String AES = "AES";  // Algorithme de cryptage
-    private static final String SECRET_KEY = "1234567890123456"; // 16 bytes pour AES-128
+    private static final String AES = "AES";
+    private static final String SECRET_KEY = "1234567890123456";
 
-    // Sauvegarder un document
-    public void saveDocument(MultipartFile file) throws Exception {
-        try {
-            // Convertir le fichier en tableau de bytes
-            byte[] data = file.getBytes();
+    // Sauvegarder un document avec l'ID utilisateur
 
-            // Crypter le fichier
-            byte[] encryptedData = encrypt(data);
+    public void saveDocument(MultipartFile file, String userId) throws IOException {
+        // Création du DocumentEntity avec le userId
+        DocumentEntity document = new DocumentEntity(
+                file.getOriginalFilename(),     // Nom du fichier
+                file.getContentType(),          // Type du fichier (pdf, xml, etc.)
+                new Date(),                     // Date de l'upload
+                file.getBytes(),                // Données du fichier en byte[]
+                userId                          // L'ID de l'utilisateur qui télécharge ce fichier
+        );
 
-            // Créer un objet DocumentEntity pour stocker les informations sur le fichier
-            DocumentEntity document = new DocumentEntity();
-            document.setFilename(file.getOriginalFilename());
-            document.setFiletype(file.getContentType());
-            document.setUploadDate(new Date());
-            document.setData(encryptedData);
+        // Sauvegarde dans MongoDB
+        documentRepository.save(document);
+    }
 
-            // Sauvegarder le document crypté dans la base de données MongoDB
-            documentRepository.save(document);
-        } catch (IOException e) {
-            logger.error("Erreur lors de la lecture du fichier", e);
-            throw new Exception("Erreur lors de la lecture du fichier", e);
+
+    public List<DocumentEntity> getDocumentsByUserId(String userId) {
+        // Log pour vérifier la requête et les données
+        logger.debug("Recherche des documents pour l'utilisateur ID: {}", userId);
+        // Exemple d'appel à la base de données pour récupérer les documents
+        List<DocumentEntity> documents = documentRepository.findByUserId(userId);
+
+        // Log des résultats
+        if (documents.isEmpty()) {
+            logger.warn("Aucun document trouvé pour l'utilisateur: {}", userId);
+        } else {
+            logger.debug("Documents trouvés pour l'utilisateur {}: {}", userId, documents);
         }
+
+        return documents;
     }
 
-    // Récupérer un document par ID
-    public DocumentEntity getDocumentById(UUID id) {
-        return documentRepository.findById(id.toString()).orElse(null);
-    }
 
-    // Méthode pour crypter les données
+
     private byte[] encrypt(byte[] data) throws Exception {
         Key key = new SecretKeySpec(SECRET_KEY.getBytes(), AES);
         Cipher cipher = Cipher.getInstance(AES);
         cipher.init(Cipher.ENCRYPT_MODE, key);
         return cipher.doFinal(data);
-    }
-
-    // Récupérer tous les documents
-    public List<DocumentEntity> getAllDocuments() {
-        return documentRepository.findAll();
     }
 }

@@ -24,6 +24,7 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 50MB
+
   security:
     filter-dispatcher-types: async, error, request
     oauth2:
