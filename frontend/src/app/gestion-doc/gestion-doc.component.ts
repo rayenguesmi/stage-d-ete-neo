@@ -155,6 +155,11 @@ export class GestionDocComponent implements OnInit {
 
     // Ajouter les fichiers réels au FormData
     this.uploadedFiles.forEach((file) => {
+      const validTypes = ['application/pdf', 'text/csv', 'application/xml'];
+      if (!validTypes.includes(file.type)) {
+        this.showPopupMessage('Type de fichier non autorisé.', 'error');
+        return;
+      }
       formData.append('file', file, file.name); // Ajoute chaque fichier en utilisant l'objet `File` réel
     });
 
