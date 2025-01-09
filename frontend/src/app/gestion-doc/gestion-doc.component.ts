@@ -167,10 +167,16 @@ export class GestionDocComponent implements OnInit {
     this.http
       .post<string>('http://localhost:8090/api/upload', formData)
       .subscribe({
-        next: (response) => {
-          this.showPopupMessage(response, 'success');
+        next: (response: any) => {
+          console.log('Réponse du serveur:', response);
+          const message =
+            response && response.message
+              ? response.message
+              : 'Téléchargement réussi'; // Utiliser la réponse directement
+          this.showPopupMessage(message, 'success');
           this.uploadedFiles = []; // Réinitialiser la liste des fichiers après upload
           this.fileDetails = []; // Réinitialiser les détails des fichiers
+          this.getUserFiles();
         },
         error: (error) => {
           this.showPopupMessage("Échec de l'upload.", 'error');
