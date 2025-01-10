@@ -13,7 +13,7 @@
 
 /* Style du bouton Logout */
 .logout-button {
-  background-color: #ff5733; /* Couleur de fond */
+  background-color: #5833ff; /* Couleur de fond */
   color: white; /* Texte en blanc */
   border: none;
   padding: 8px 16px; /* Taille du bouton */
@@ -29,14 +29,14 @@
 
 /* Style au survol */
 .logout-button:hover {
-  background-color: #c70039;
+  background-color: #2100c7;
   transform: scale(1.05); /* Agrandissement léger au survol */
 }
 
 /* Style au focus */
 .logout-button:focus {
   outline: none;
-  box-shadow: 0 0 5px 2px rgba(255, 87, 51, 0.8);
+  box-shadow: 0 0 5px 2px rgba(116, 51, 255, 0.8);
 }
 
 /* Ajouter l'icône à gauche */

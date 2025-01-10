@@ -201,22 +201,42 @@ export class GestionDocComponent implements OnInit {
       .get<any[]>(`http://localhost:8090/api/files/${this.userId}`)
       .subscribe({
         next: (files) => {
-          console.log('Fichiers récupérés du serveur:', files);
-          this.uploadedFiles = files.map(
-            (file) => new File([file], file.filename)
-          );
-          this.fileDetails = files.map((file) => ({
-            filename: file.filename,
-            type: file.type,
-            uploadDate: file.uploadDate,
-          }));
+          if (files.length === 0) {
+            // Si aucun fichier n'est trouvé, affichez un message d'information
+            this.showPopupMessage(
+              'Aucun fichier trouvé pour cet utilisateur.',
+              'info'
+            );
+          } else {
+            console.log('Fichiers récupérés du serveur:', files);
+            this.uploadedFiles = files.map(
+              (file) => new File([file], file.filename)
+            );
+            this.fileDetails = files.map((file) => ({
+              filename: file.filename,
+              type: file.type,
+              uploadDate: file.uploadDate,
+            }));
+          }
         },
         error: (error) => {
-          console.error('Erreur lors de la récupération des fichiers:', error);
-          this.showPopupMessage(
-            `Erreur lors de la récupération des fichiers: ${error.message}`,
-            'error'
-          );
+          // Vérifiez si l'erreur est une erreur 404
+          if (error.status === 404) {
+            this.showPopupMessage(
+              'Aucun fichier trouvé pour cet utilisateur.',
+              'info'
+            );
+          } else {
+            // Pour d'autres erreurs, affichez le message d'erreur
+            console.error(
+              'Erreur lors de la récupération des fichiers:',
+              error
+            );
+            this.showPopupMessage(
+              `Erreur lors de la récupération des fichiers: ${error.message}`,
+              'error'
+            );
+          }
         },
       });
   }
