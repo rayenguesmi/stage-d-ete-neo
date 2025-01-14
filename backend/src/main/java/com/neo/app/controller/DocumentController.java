@@ -69,11 +69,11 @@ public class DocumentController {
         List<DocumentEntity> documents = documentService.getDocumentsByUserId(userId);
 
         if (documents.isEmpty()) {
-            // Si aucun fichier n'est trouvé pour cet utilisateur, renvoyer un 404
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        // Si des fichiers sont trouvés, les renvoyer au frontend
+
         return ResponseEntity.ok(documents);
     }
 

@@ -1,0 +1,100 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end; /* Aligner les éléments à droite */
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: flex-end; /* Aligner la pagination à droite */
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+}
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.buttons-group {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-icon {
+  background-color: #5e17eb;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-icon:hover {
+  background-color: #4a0fb8;
+}
+
+.search-container input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th,
+table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+table th {
+  background-color: #f1f1f1;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end; /* Aligner la pagination à droite */
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+}
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.pagination-container button {
+  background-color: #5e17eb;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.pagination-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

@@ -1,1 +1,118 @@
-<h2 style="text-align: center">Gestion des campagnes</h2>
+<div class="container">
+  <h1 class="title">
+    <i class="fas fa-folder-open"></i> Gestionnaire de documents
+  </h1>
+
+  <!-- Barre supérieure : boutons + recherche -->
+  <!-- Barre supérieure avec les boutons et la recherche -->
+  <div class="top-bar">
+    <div class="left-section">
+      <!-- Boutons d'action -->
+      <div class="buttons-group">
+        <button class="btn-icon" (click)="addTask()">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="btn-icon" (click)="exportData()">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </button>
+        <button class="btn-icon" (click)="reloadPage()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <!-- Champ de recherche -->
+      <div class="search-container">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [(ngModel)]="searchQuery"
+          (input)="filterTable()"
+        />
+      </div>
+    </div>
+  </div>
+  <!-- Tableau des données -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>
+          Titre
+          <button class="sort-btn" (click)="sortByColumn('titre')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>
+          Version
+          <button class="sort-btn" (click)="sortByColumn('version')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>
+          Nb de Rapports
+          <button class="sort-btn" (click)="sortByColumn('nbRapports')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>
+          Date
+          <button class="sort-btn" (click)="sortByColumn('date')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>Nb d'Exécution</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let item of pagedTableData">
+        <td>{{ item.id }}</td>
+        <td>{{ item.titre }}</td>
+        <td>{{ item.version }}</td>
+        <td>{{ item.nbRapports }}</td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.nbExecution }}</td>
+        <td>
+          <span
+            class="three-dots"
+            (click)="toggleMenu($event, item.id)"
+            aria-label="Menu d'actions"
+          >
+            &#x2022;&#x2022;&#x2022;
+          </span>
+          <div
+            *ngIf="menuVisible && activeMenuId === item.id"
+            class="dropdown-menu"
+          >
+            <ul>
+              <li (click)="executeTask(item)">Lancer l'exécution</li>
+              <li (click)="openModal(item)">Modifier</li>
+              <li (click)="confirmDuplication(item)">Dupliquer</li>
+              <li (click)="archiveTask(item)">Archiver</li>
+              <li (click)="confirmDeletion(item)">Supprimer</li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination sous le tableau -->
+  <div class="pagination-container">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      aria-label="Page précédente"
+    >
+      ←
+    </button>
+    <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      aria-label="Page suivante"
+    >
+      →
+    </button>
+  </div>
+</div>

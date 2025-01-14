@@ -1,7 +1,7 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms'; // Ajoute cette ligne
+import { BrowserModule } from '@angular/platform-browser';
 import { KeycloakService } from 'keycloak-angular';
 import { initializeKeycloak } from './KeycloakInitService';
 import { AdministrationComponent } from './administration/administration.component';
@@ -24,7 +24,7 @@ import { LandingComponent } from './landing/landing.component';
     GestionExecComponent,
     HomeComponent,
   ],
-  imports: [BrowserModule, HttpClientModule, AppRoutingModule],
+  imports: [BrowserModule, HttpClientModule, AppRoutingModule, FormsModule],
   providers: [
     KeycloakService,
     {
