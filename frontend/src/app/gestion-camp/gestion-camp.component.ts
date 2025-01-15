@@ -21,6 +21,9 @@ export class GestionCampComponent {
   showPopup = false; // Pour gérer l'affichage du popup
 
   popupMessage: string = ''; // Message à afficher dans le popup
+  confirmationVisible: boolean = false;
+  confirmationMessage: string = '';
+  confirmationAction: () => void = () => {};
 
   constructor() {
     // Initialisation des données (exemple)
@@ -65,11 +68,36 @@ export class GestionCampComponent {
   }
 
   exportData(): void {
-    console.log('Exportation des données...');
+    const csvContent = this.convertToCSV(this.tableData);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.href = url;
+    link.setAttribute('download', 'table-data.csv');
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     this.showPopupMessage(
       'Les données ont été exportées avec succès',
       'success'
     );
+  }
+
+  convertToCSV(data: any[]): string {
+    if (!data || data.length === 0) {
+      return '';
+    }
+
+    const headers = Object.keys(data[0]).join(','); // Génère les en-têtes
+    const rows = data
+      .map((item) => Object.values(item).join(',')) // Génère les lignes
+      .join('\n');
+
+    return `${headers}\n${rows}`; // Concatène les en-têtes et les lignes
   }
 
   reloadPage(): void {
@@ -145,31 +173,63 @@ export class GestionCampComponent {
     this.activeMenuId = this.menuVisible ? id : null;
   }
 
+  confirmAction(message: string, action: () => void): void {
+    this.confirmationMessage = message;
+    this.confirmationAction = action;
+    this.confirmationVisible = true;
+  }
+
   confirmDuplication(item: any): void {
-    const duplicatedItem = { ...item, id: this.generateNewId() };
-    this.tableData.push(duplicatedItem);
-    this.updatePagedTableData();
-    this.showPopupMessage('Document dupliqué avec succès', 'success');
+    this.confirmAction('Voulez-vous vraiment dupliquer cet élément ?', () => {
+      const duplicatedItem = { ...item, id: this.generateNewId() };
+      this.tableData.push(duplicatedItem);
+      this.updatePagedTableData();
+      this.showPopupMessage('Document dupliqué avec succès', 'success');
+    });
   }
 
   confirmActivation(item: any): void {
-    item.disabled = false;
-    this.showPopupMessage('Document réactivé', 'success');
+    this.confirmAction('Voulez-vous vraiment activer cet élément ?', () => {
+      item.disabled = false;
+      this.showPopupMessage('Document réactivé', 'success');
+    });
   }
 
   confirmDeactivation(item: any): void {
-    item.disabled = true;
-    this.showPopupMessage('Document désactivé', 'info');
+    this.confirmAction('Voulez-vous vraiment désactiver cet élément ?', () => {
+      item.disabled = true;
+      this.showPopupMessage('Document désactivé', 'info');
+    });
   }
 
   confirmDeletion(item: any): void {
-    this.tableData = this.tableData.filter((doc) => doc.id !== item.id);
-    this.updatePagedTableData();
-    this.showPopupMessage('Document supprimé', 'error');
+    this.confirmAction('Voulez-vous vraiment supprimer cet élément ?', () => {
+      const index = this.tableData.indexOf(item);
+      if (index !== -1) {
+        this.tableData.splice(index, 1);
+      }
+      this.updatePagedTableData();
+      this.showPopupMessage('Document supprimé', 'error');
+    });
   }
 
   executeTask(item: any): void {
-    this.showPopupMessage(`Tâche exécutée pour ${item.titre}`, 'info');
+    this.confirmAction('Voulez-vous vraiment exécuter cette tâche ?', () => {
+      this.showPopupMessage(`Tâche exécutée pour ${item.titre}`, 'info');
+    });
+  }
+
+  closeConfirmation(): void {
+    this.confirmationVisible = false;
+    this.confirmationMessage = '';
+    this.confirmationAction = () => {};
+  }
+
+  proceedWithConfirmation(): void {
+    if (this.confirmationAction) {
+      this.confirmationAction();
+    }
+    this.closeConfirmation();
   }
 
   previousPage(): void {
