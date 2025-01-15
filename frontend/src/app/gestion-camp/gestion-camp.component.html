@@ -4,12 +4,10 @@
   </h1>
 
   <!-- Barre supérieure : boutons + recherche -->
-  <!-- Barre supérieure avec les boutons et la recherche -->
   <div class="top-bar">
     <div class="left-section">
-      <!-- Boutons d'action -->
       <div class="buttons-group">
-        <button class="btn-icon" (click)="addTask()">
+        <button class="btn-icon" (click)="openAddModal()">
           <i class="fas fa-plus"></i>
         </button>
         <button class="btn-icon" (click)="exportData()">
@@ -19,7 +17,6 @@
           <i class="fas fa-sync-alt"></i>
         </button>
       </div>
-      <!-- Champ de recherche -->
       <div class="search-container">
         <input
           type="text"
@@ -30,6 +27,7 @@
       </div>
     </div>
   </div>
+
   <!-- Tableau des données -->
   <table>
     <thead>
@@ -63,7 +61,6 @@
         <th>Action</th>
       </tr>
     </thead>
-
     <tbody>
       <tr *ngFor="let item of pagedTableData">
         <td>{{ item.id }}</td>
@@ -84,18 +81,91 @@
             *ngIf="menuVisible && activeMenuId === item.id"
             class="dropdown-menu"
           >
-            <ul>
-              <li (click)="executeTask(item)">Lancer l'exécution</li>
-              <li (click)="openModal(item)">Modifier</li>
-              <li (click)="confirmDuplication(item)">Dupliquer</li>
-              <li (click)="archiveTask(item)">Archiver</li>
-              <li (click)="confirmDeletion(item)">Supprimer</li>
-            </ul>
+            <button class="action-btn" (click)="openModal(item)">
+              Modifier
+            </button>
+            <button class="action-btn" (click)="confirmDuplication(item)">
+              Dupliquer
+            </button>
+            <button
+              class="action-btn"
+              [disabled]="!item.disabled"
+              (click)="confirmActivation(item)"
+            >
+              Réactiver
+            </button>
+            <button
+              class="action-btn"
+              [disabled]="item.disabled"
+              (click)="confirmDeactivation(item)"
+            >
+              Désactiver
+            </button>
+            <button class="action-btn" (click)="confirmDeletion(item)">
+              Supprimer
+            </button>
+            <button class="action-btn" (click)="executeTask(item)">
+              Lancer l'exécution
+            </button>
           </div>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <!-- Popup de modification -->
+  <div *ngIf="showEditModal || showAddModal" class="modal">
+    <div class="modal-content">
+      <h2>{{ isEditMode ? "Modifier" : "Ajouter" }} un document</h2>
+      <form (submit)="submitEditForm()">
+        <label>Titre :</label>
+        <input
+          [(ngModel)]="editData.titre"
+          name="titre"
+          pattern="[A-Za-z0-9 ]+"
+          required
+          placeholder="Document X"
+        />
+
+        <label>Version :</label>
+        <input
+          [(ngModel)]="editData.version"
+          name="version"
+          pattern="\d+(\.\d+)+"
+          required
+          placeholder="1.0 ou 1.0.1"
+        />
+
+        <label>Nb de Rapports :</label>
+        <input
+          [(ngModel)]="editData.nbRapports"
+          name="nbRapports"
+          type="number"
+          min="0"
+          required
+          placeholder="Entier positif"
+        />
+
+        <label>Date :</label>
+        <input [(ngModel)]="editData.date" name="date" type="date" required />
+
+        <label>Nb d'Exécution :</label>
+        <input
+          [(ngModel)]="editData.nbExecution"
+          name="nbExecution"
+          type="number"
+          min="0"
+          required
+          placeholder="Entier positif"
+        />
+
+        <button type="submit">
+          {{ isEditMode ? "Enregistrer" : "Ajouter" }}
+        </button>
+        <button type="button" (click)="closeModal()">Annuler</button>
+      </form>
+    </div>
+  </div>
 
   <!-- Pagination sous le tableau -->
   <div class="pagination-container">
@@ -114,5 +184,10 @@
     >
       →
     </button>
+  </div>
+
+  <!-- Notifications -->
+  <div class="popup" *ngIf="showPopup">
+    <span>{{ popupMessage }}</span>
   </div>
 </div>

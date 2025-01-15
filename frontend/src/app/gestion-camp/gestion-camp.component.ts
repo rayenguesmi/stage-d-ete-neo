@@ -1,146 +1,188 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-gestion-camp',
   templateUrl: './gestion-camp.component.html',
   styleUrls: ['./gestion-camp.component.css'],
 })
-export class GestionCampComponent implements OnInit {
-  isAscending: boolean = true;
-  tableauData: any[] = [
-    {
-      id: 1,
-      titre: 'Document 1',
-      version: '1.0',
-      nbRapports: 5,
-      date: '2024-01-12',
-      nbExecution: 2,
-    },
-    {
-      id: 2,
-      titre: 'Document 2',
-      version: '1.1',
-      nbRapports: 3,
-      date: '2024-02-14',
-      nbExecution: 4,
-    },
-    // Ajoutez plus de données ici
-  ];
-  filteredTableData: any[] = [];
-  pagedTableData: any[] = [];
+export class GestionCampComponent {
   searchQuery: string = '';
-  currentPage: number = 1;
-  itemsPerPage: number = 5;
-  totalPages: number = 0;
-  menuVisible: boolean = false;
+  tableData: any[] = []; // Liste principale des documents
+  pagedTableData: any[] = []; // Données affichées dans le tableau (pagination)
   activeMenuId: number | null = null;
+  menuVisible: boolean = false;
+  currentPage: number = 1;
+  itemsPerPage: number = 5; // Nombre d'éléments par page
+  totalPages: number = 1;
+  isEditMode: boolean = false;
+  showEditModal: boolean = false;
+  showAddModal: boolean = false;
+  editData: any = {}; // Exemple : données d'édition
+  showPopup = false; // Pour gérer l'affichage du popup
 
-  ngOnInit(): void {
-    this.updateTableData();
+  popupMessage: string = ''; // Message à afficher dans le popup
+
+  constructor() {
+    // Initialisation des données (exemple)
+    this.tableData = [
+      {
+        id: 1,
+        titre: 'Document A',
+        version: '1.0',
+        nbRapports: 10,
+        date: '2025-01-01',
+        nbExecution: 5,
+      },
+      {
+        id: 2,
+        titre: 'Document B',
+        version: '2.0',
+        nbRapports: 20,
+        date: '2025-02-01',
+        nbExecution: 3,
+      },
+    ];
+    this.updatePagedTableData();
   }
 
-  updateTableData(): void {
-    this.filteredTableData = this.tableauData.filter((item) =>
-      item.titre.toLowerCase().includes(this.searchQuery.toLowerCase())
-    );
-    this.totalPages = Math.ceil(
-      this.filteredTableData.length / this.itemsPerPage
-    );
-    this.updatePagination();
-  }
-
-  updatePagination(): void {
+  updatePagedTableData(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.pagedTableData = this.filteredTableData.slice(
-      startIndex,
-      startIndex + this.itemsPerPage
+    const endIndex = startIndex + this.itemsPerPage;
+    this.pagedTableData = this.tableData.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
+  }
+
+  generateNewId(): number {
+    return this.tableData.length > 0
+      ? Math.max(...this.tableData.map((item) => item.id)) + 1
+      : 1;
+  }
+
+  showPopupMessage(message: string, type: 'success' | 'error' | 'info'): void {
+    this.popupMessage = `${type.toUpperCase()}: ${message}`;
+    this.showPopup = true;
+    setTimeout(() => (this.showPopup = false), 4000);
+  }
+
+  exportData(): void {
+    console.log('Exportation des données...');
+    this.showPopupMessage(
+      'Les données ont été exportées avec succès',
+      'success'
     );
+  }
+
+  reloadPage(): void {
+    console.log('Rechargement de la page...');
+    this.showPopupMessage('La page a été rechargée', 'info');
+    window.location.reload();
+  }
+
+  openAddModal(): void {
+    this.showAddModal = true;
+    this.isEditMode = false;
+    this.editData = {};
+  }
+
+  closeModal(): void {
+    this.showAddModal = false;
+    this.showEditModal = false;
+  }
+
+  submitEditForm(): void {
+    if (this.isEditMode) {
+      const index = this.tableData.findIndex(
+        (item) => item.id === this.editData.id
+      );
+      if (index !== -1) {
+        this.tableData[index] = { ...this.editData };
+      }
+      this.showPopupMessage('Document mis à jour avec succès', 'success');
+    } else {
+      const newItem = {
+        ...this.editData,
+        id: this.generateNewId(),
+      };
+      this.tableData.push(newItem);
+      this.showPopupMessage('Nouvelle campagne ajoutée avec succès', 'success');
+    }
+
+    this.updatePagedTableData();
+    this.closeModal();
+  }
+
+  openModal(item: any): void {
+    this.showEditModal = true;
+    this.isEditMode = true;
+    this.editData = { ...item };
   }
 
   filterTable(): void {
-    this.updateTableData();
+    const query = this.searchQuery.toLowerCase().trim();
+    if (query) {
+      this.pagedTableData = this.tableData.filter(
+        (item) =>
+          item.titre.toLowerCase().includes(query) ||
+          item.version.toLowerCase().includes(query) ||
+          item.nbRapports.toString().includes(query) ||
+          item.date.includes(query) ||
+          item.nbExecution.toString().includes(query)
+      );
+    } else {
+      this.updatePagedTableData();
+    }
+  }
+
+  // Ajout des méthodes manquantes
+  sortByColumn(column: string): void {
+    this.tableData.sort((a, b) => (a[column] > b[column] ? 1 : -1));
+    this.updatePagedTableData();
+  }
+
+  toggleMenu(event: Event, id: number): void {
+    event.stopPropagation();
+    this.menuVisible = !this.menuVisible || this.activeMenuId !== id;
+    this.activeMenuId = this.menuVisible ? id : null;
+  }
+
+  confirmDuplication(item: any): void {
+    const duplicatedItem = { ...item, id: this.generateNewId() };
+    this.tableData.push(duplicatedItem);
+    this.updatePagedTableData();
+    this.showPopupMessage('Document dupliqué avec succès', 'success');
+  }
+
+  confirmActivation(item: any): void {
+    item.disabled = false;
+    this.showPopupMessage('Document réactivé', 'success');
+  }
+
+  confirmDeactivation(item: any): void {
+    item.disabled = true;
+    this.showPopupMessage('Document désactivé', 'info');
+  }
+
+  confirmDeletion(item: any): void {
+    this.tableData = this.tableData.filter((doc) => doc.id !== item.id);
+    this.updatePagedTableData();
+    this.showPopupMessage('Document supprimé', 'error');
+  }
+
+  executeTask(item: any): void {
+    this.showPopupMessage(`Tâche exécutée pour ${item.titre}`, 'info');
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updatePagination();
+      this.updatePagedTableData();
     }
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.updatePagination();
+      this.updatePagedTableData();
     }
-  }
-
-  toggleMenu(event: Event, id: number): void {
-    this.menuVisible = this.activeMenuId !== id || !this.menuVisible;
-    this.activeMenuId = this.menuVisible ? id : null;
-  }
-
-  sortByDate(): void {
-    this.filteredTableData.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    this.updatePagination();
-  }
-
-  confirmDuplication(item: any): void {
-    const newItem = { ...item, id: this.tableauData.length + 1 };
-    this.tableauData.push(newItem);
-    this.updateTableData();
-  }
-
-  confirmDeletion(item: any): void {
-    this.tableauData = this.tableauData.filter((data) => data.id !== item.id);
-    this.updateTableData();
-  }
-  // Ajouter cette propriété pour stocker l'élément sélectionné
-  selectedItem: any = null;
-
-  // Ajouter cette méthode pour ouvrir le modal
-  openModal(item: any): void {
-    this.selectedItem = item; // Stocker les données de l'élément sélectionné
-    alert(`Modifier l'élément : ${JSON.stringify(item)}`);
-  }
-  addTask(): void {
-    console.log('Ajouter une tâche');
-    // Logique pour ajouter une tâche
-  }
-
-  exportData(): void {
-    console.log('Exporter les données');
-    // Logique pour exporter les données
-  }
-
-  reloadPage(): void {
-    console.log('Recharger la page');
-    window.location.reload();
-  }
-
-  executeTask(item: any): void {
-    console.log(`Lancer l'exécution pour l'élément :`, item);
-    // Logique pour lancer l'exécution
-  }
-
-  archiveTask(item: any): void {
-    console.log(`Archiver l'élément :`, item);
-    // Logique pour archiver
-  }
-
-  sortByColumn(column: string): void {
-    this.filteredTableData.sort((a: any, b: any) => {
-      if (a[column] > b[column]) {
-        return this.isAscending ? 1 : -1;
-      }
-      if (a[column] < b[column]) {
-        return this.isAscending ? -1 : 1;
-      }
-      return 0;
-    });
-    this.isAscending = !this.isAscending; // Alterner l'ordre de tri
-    this.updatePagination();
   }
 }
