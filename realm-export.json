@@ -48,9 +48,27 @@
   "roles": {
     "realm": [
       {
+        "id": "7aceaae0-3d26-4669-a369-1c6a134ff18c",
+        "name": "groupcsv",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "29b7eee6-b22a-4ee6-b4df-28be28e874bf",
+        "attributes": {}
+      },
+      {
         "id": "be6d972a-2804-4bec-a19c-1fe5afcf2ddd",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "29b7eee6-b22a-4ee6-b4df-28be28e874bf",
+        "attributes": {}
+      },
+      {
+        "id": "de38abfc-945d-4ff8-aef4-fbd5cc6cd31b",
+        "name": "ROLE_PDF",
+        "description": "",
         "composite": false,
         "clientRole": false,
         "containerId": "29b7eee6-b22a-4ee6-b4df-28be28e874bf",
@@ -82,6 +100,22 @@
         "name": "offline_access",
         "description": "${role_offline-access}",
         "composite": false,
+        "clientRole": false,
+        "containerId": "29b7eee6-b22a-4ee6-b4df-28be28e874bf",
+        "attributes": {}
+      },
+      {
+        "id": "5ca56312-41d4-4e63-bc4a-d9d8401f35a9",
+        "name": "ROLE_CSV",
+        "description": "",
+        "composite": true,
+        "composites": {
+          "client": {
+            "account": [
+              "manage-account"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "29b7eee6-b22a-4ee6-b4df-28be28e874bf",
         "attributes": {}
@@ -472,7 +506,7 @@
     {
       "id": "683ad823-291c-429a-8dc2-884c4fcef8fd",
       "username": "service-account-neo_tm_backend",
-      "emailVerified": false,
+      "emailVerified": true,
       "createdTimestamp": 1733417381872,
       "enabled": true,
       "totp": false,
@@ -737,6 +771,7 @@
         "client.secret.creation.time": "1733417381",
         "backchannel.logout.session.required": "true",
         "oauth2.device.authorization.grant.enabled": "false",
+        "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
       "authenticationFlowBindingOverrides": {},
@@ -874,12 +909,20 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
+        "client.introspection.response.allow.jwt.claim.enabled": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "use.refresh.tokens": "true",
         "realm_client": "false",
         "oidc.ciba.grant.enabled": "false",
+        "client.use.lightweight.access.token.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "oauth2.device.authorization.grant.enabled": "false",
+        "client_credentials.use_refresh_token": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "require.pushed.authorization.requests": "false",
+        "acr.loa.map": "{}",
         "display.on.consent.screen": "false",
-        "backchannel.logout.revoke.offline.tokens": "false"
+        "token.response.type.bearer.lower-case": "false"
       },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
@@ -1664,14 +1707,14 @@
   },
   "smtpServer": {
     "password": "**********",
-    "replyToDisplayName": "Support Keycloak",
+    "replyToDisplayName": "Support Keycloak12",
     "starttls": "true",
     "auth": "true",
     "port": "587",
     "host": "smtp.gmail.com",
     "replyTo": "tabbanezohra@gmail.com",
     "from": "tabbanezohra@gmail.com",
-    "fromDisplayName": "Admin Keycloak",
+    "fromDisplayName": "Admin Keycloak 12",
     "envelopeFrom": "tabbanezohra@gmail.com",
     "ssl": "false",
     "user": "tabbanezohra@gmail.com"
