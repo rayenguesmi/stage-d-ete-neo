@@ -1,51 +1,83 @@
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-gestion-camp',
   templateUrl: './gestion-camp.component.html',
   styleUrls: ['./gestion-camp.component.css'],
 })
-export class GestionCampComponent {
+export class GestionCampComponent implements OnInit {
   searchQuery: string = '';
-  tableData: any[] = []; // Liste principale des documents
-  pagedTableData: any[] = []; // Données affichées dans le tableau (pagination)
+  tableData: any[] = []; // Liste principale des campagnes/documents
+  pagedTableData: any[] = []; // Données paginées
+  currentPage: number = 1;
+  itemsPerPage: number = 5;
+  totalPages: number = 1;
   activeMenuId: number | null = null;
   menuVisible: boolean = false;
-  currentPage: number = 1;
-  itemsPerPage: number = 5; // Nombre d'éléments par page
-  totalPages: number = 1;
-  isEditMode: boolean = false;
   showEditModal: boolean = false;
   showAddModal: boolean = false;
-  editData: any = {}; // Exemple : données d'édition
-  showPopup = false; // Pour gérer l'affichage du popup
-
-  popupMessage: string = ''; // Message à afficher dans le popup
+  showPopup = false;
+  popupMessage: string = '';
   confirmationVisible: boolean = false;
   confirmationMessage: string = '';
   confirmationAction: () => void = () => {};
+  editData: any = {};
+  isEditMode: boolean = false;
+  userId: string | null = null;
+  roles: string[] = [];
+  hasCampaignRole = false;
 
-  constructor() {
-    // Initialisation des données (exemple)
-    this.tableData = [
-      {
-        id: 1,
-        titre: 'Document A',
-        version: '1.0',
-        nbRapports: 10,
-        date: '2025-01-01',
-        nbExecution: 5,
-      },
-      {
-        id: 2,
-        titre: 'Document B',
-        version: '2.0',
-        nbRapports: 20,
-        date: '2025-02-01',
-        nbExecution: 3,
-      },
-    ];
-    this.updatePagedTableData();
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.extractRolesFromToken();
+    this.getCampaigns();
+  }
+
+  private extractRolesFromToken(): void {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const payload = this.decodeJwtPayload(token);
+      this.roles = payload?.realm_access?.roles || [];
+      this.userId = payload?.sub;
+      this.hasCampaignRole = this.roles.includes('ROLE_CAMPAIGN');
+    } else {
+      this.showPopupMessage(
+        'Aucun token trouvé. Veuillez vous reconnecter.',
+        'error'
+      );
+    }
+  }
+
+  private decodeJwtPayload(token: string): any {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace('-', '+').replace('_', '/');
+    const jsonPayload = atob(base64);
+    return JSON.parse(jsonPayload);
+  }
+
+  getCampaigns(): void {
+    if (!this.userId) {
+      this.showPopupMessage('Utilisateur non authentifié.', 'error');
+      return;
+    }
+
+    this.http
+      .get<any[]>(`http://localhost:8090/api/campaigns?userId=${this.userId}`)
+      .subscribe({
+        next: (data) => {
+          this.tableData = data;
+          this.updatePagedTableData();
+        },
+        error: (error) => {
+          console.error('Erreur lors de la récupération des campagnes:', error);
+          this.showPopupMessage(
+            'Erreur lors du chargement des campagnes.',
+            'error'
+          );
+        },
+      });
   }
 
   updatePagedTableData(): void {
@@ -60,6 +92,9 @@ export class GestionCampComponent {
       ? Math.max(...this.tableData.map((item) => item.id)) + 1
       : 1;
   }
+  generateFrontendId(): string {
+    return 'front_' + Math.random().toString(36).substr(2, 9); // Génère un ID unique pour le frontend
+  }
 
   showPopupMessage(message: string, type: 'success' | 'error' | 'info'): void {
     this.popupMessage = `${type.toUpperCase()}: ${message}`;
@@ -68,42 +103,50 @@ export class GestionCampComponent {
   }
 
   exportData(): void {
-    const csvContent = this.convertToCSV(this.tableData);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
+    this.http
+      .get(`http://localhost:8090/api/campaigns/export`, {
+        responseType: 'text',
+      })
+      .subscribe({
+        next: (response) => {
+          const blob = new Blob([response], {
+            type: 'text/csv;charset=utf-8;',
+          });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute('download', 'campaigns.csv');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
 
-    link.href = url;
-    link.setAttribute('download', 'table-data.csv');
-    document.body.appendChild(link);
-    link.click();
-
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    this.showPopupMessage(
-      'Les données ont été exportées avec succès',
-      'success'
-    );
+          this.showPopupMessage(
+            'Les campagnes ont été exportées avec succès.',
+            'success'
+          );
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'exportation:", error);
+          this.showPopupMessage("Erreur lors de l'exportation.", 'error');
+        },
+      });
   }
 
-  convertToCSV(data: any[]): string {
-    if (!data || data.length === 0) {
-      return '';
-    }
-
-    const headers = Object.keys(data[0]).join(','); // Génère les en-têtes
-    const rows = data
-      .map((item) => Object.values(item).join(',')) // Génère les lignes
-      .join('\n');
-
-    return `${headers}\n${rows}`; // Concatène les en-têtes et les lignes
-  }
-
-  reloadPage(): void {
-    console.log('Rechargement de la page...');
-    this.showPopupMessage('La page a été rechargée', 'info');
-    window.location.reload();
+  duplicateCampaign(campaignId: string): void {
+    this.http
+      .post<any>(
+        `http://localhost:8090/api/campaigns/${campaignId}/duplicate`,
+        {}
+      )
+      .subscribe({
+        next: () => {
+          this.showPopupMessage('Campagne dupliquée avec succès.', 'success');
+          this.getCampaigns();
+        },
+        error: (error) => {
+          console.error('Erreur lors de la duplication:', error);
+          this.showPopupMessage('Échec de la duplication.', 'error');
+        },
+      });
   }
 
   openAddModal(): void {
@@ -119,22 +162,67 @@ export class GestionCampComponent {
 
   submitEditForm(): void {
     if (this.isEditMode) {
-      const index = this.tableData.findIndex(
-        (item) => item.id === this.editData.id
-      );
-      if (index !== -1) {
-        this.tableData[index] = { ...this.editData };
-      }
-      this.showPopupMessage('Document mis à jour avec succès', 'success');
+      // Si on est en mode édition, envoyer les modifications au backend
+      const updatedItem = { ...this.editData }; // Récupérer les données modifiées
+
+      this.http
+        .put(
+          `http://localhost:8090/api/campaigns/${updatedItem.id2}`,
+          updatedItem
+        )
+        .subscribe({
+          next: () => {
+            // Afficher un message de succès
+            this.showPopupMessage('Campagne modifiée avec succès.', 'success');
+            // Rafraîchir les campagnes après la modification
+            this.getCampaigns();
+          },
+          error: (error) => {
+            console.error('Erreur lors de la modification:', error);
+            this.showPopupMessage('Erreur lors de la modification.', 'error');
+          },
+        });
     } else {
+      // Sinon, c'est une nouvelle campagne, on l'ajoute
+      if (
+        !this.editData.titre ||
+        !this.editData.version ||
+        !this.editData.date ||
+        !this.editData.nbExecution
+      ) {
+        this.showPopupMessage(
+          'Tous les champs obligatoires doivent être remplis!',
+          'error'
+        );
+        return;
+      }
+
+      const generatedId = this.generateFrontendId();
       const newItem = {
         ...this.editData,
-        id: this.generateNewId(),
+        id: generatedId,
+        id2: generatedId,
       };
-      this.tableData.push(newItem);
-      this.showPopupMessage('Nouvelle campagne ajoutée avec succès', 'success');
+
+      this.http.post('http://localhost:8090/api/campaigns', newItem).subscribe({
+        next: () => {
+          this.showPopupMessage(
+            'Nouvelle campagne ajoutée avec succès',
+            'success'
+          );
+          this.getCampaigns(); // Rafraîchir les données
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'ajout de la campagne:", error);
+          this.showPopupMessage(
+            "Erreur lors de l'ajout de la campagne",
+            'error'
+          );
+        },
+      });
     }
 
+    // Mettre à jour la table paginée après l'ajout ou la modification
     this.updatePagedTableData();
     this.closeModal();
   }
@@ -161,7 +249,6 @@ export class GestionCampComponent {
     }
   }
 
-  // Ajout des méthodes manquantes
   sortByColumn(column: string): void {
     this.tableData.sort((a, b) => (a[column] > b[column] ? 1 : -1));
     this.updatePagedTableData();
@@ -172,20 +259,34 @@ export class GestionCampComponent {
     this.menuVisible = !this.menuVisible || this.activeMenuId !== id;
     this.activeMenuId = this.menuVisible ? id : null;
   }
+  confirmDuplication(item: any): void {
+    this.confirmAction('Voulez-vous vraiment dupliquer cet élément ?', () => {
+      // Générer un nouvel ID unique pour la duplication
+      const duplicatedItem = {
+        ...item,
+        id: this.generateFrontendId(), // Utiliser un ID unique
+        id2: this.generateFrontendId(), // Assurez-vous de l'ID id2 aussi
+      };
 
+      // Ajouter l'élément dupliqué à la liste
+      this.tableData.push(duplicatedItem);
+
+      // Mettre à jour les données paginées pour refléter la nouvelle ligne
+      this.updatePagedTableData();
+
+      // Afficher un message de succès
+      this.showPopupMessage('Document dupliqué avec succès', 'success');
+
+      // Fermer la popup de confirmation
+      this.closeConfirmation();
+    });
+  }
+
+  // Méthode générique de confirmation qui montre le message et exécute l'action
   confirmAction(message: string, action: () => void): void {
     this.confirmationMessage = message;
     this.confirmationAction = action;
-    this.confirmationVisible = true;
-  }
-
-  confirmDuplication(item: any): void {
-    this.confirmAction('Voulez-vous vraiment dupliquer cet élément ?', () => {
-      const duplicatedItem = { ...item, id: this.generateNewId() };
-      this.tableData.push(duplicatedItem);
-      this.updatePagedTableData();
-      this.showPopupMessage('Document dupliqué avec succès', 'success');
-    });
+    this.confirmationVisible = true; // Afficher la popup de confirmation
   }
 
   confirmActivation(item: any): void {
@@ -227,9 +328,14 @@ export class GestionCampComponent {
 
   proceedWithConfirmation(): void {
     if (this.confirmationAction) {
-      this.confirmationAction();
+      this.confirmationAction(); // Exécuter l'action (par exemple, duplication, suppression)
     }
-    this.closeConfirmation();
+    this.closeConfirmation(); // Fermer la popup après avoir confirmé l'action
+  }
+
+  reloadPage(): void {
+    this.showPopupMessage('La page a été rechargée', 'info');
+    window.location.reload();
   }
 
   previousPage(): void {

@@ -53,8 +53,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // CORS configuration
                 .csrf(csrf -> csrf.disable())  // Disable CSRF (useful for APIs)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").authenticated()  // Protect /api/** endpoints
-                        .anyRequest().permitAll()  // Allow all other requests
+                        .requestMatchers("/api/**").authenticated()  // Protéger les endpoints /api/**
+                        .anyRequest().permitAll()  // Permettre toutes les autres requêtes
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.decoder(jwtDecoder()))  // Direct JWT decoding configuration

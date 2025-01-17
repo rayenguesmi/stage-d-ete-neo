@@ -2,11 +2,14 @@ server:
   port: 8090
 logging:
   level:
+    root: DEBUG
+    com.neo.app.controller: DEBUG
     org.springframework.web: DEBUG
     org.apache.tomcat: DEBUG
     org.springframework.web.cors: DEBUG
     org.springframework.data: DEBUG
     org.springframework.boot.autoconfigure.web: TRACE
+
 keycloak:
   url: http://localhost:8082
   realm: Neo_TM

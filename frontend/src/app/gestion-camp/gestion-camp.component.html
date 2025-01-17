@@ -128,7 +128,7 @@
     <div class="modal-content">
       <!-- Bouton pour fermer la modal -->
       <button class="close-btn" (click)="closeModal()">&#x2715;</button>
-      <h2>{{ isEditMode ? "Modifier" : "Ajouter" }} un document</h2>
+      <h2>{{ isEditMode ? "Modifier" : "Ajouter" }} un campagne</h2>
       <form (submit)="submitEditForm()">
         <label>Titre :</label>
         <input
@@ -136,7 +136,7 @@
           name="titre"
           pattern="[A-Za-z0-9 ]+"
           required
-          placeholder="Document X"
+          placeholder="Camp X"
         />
 
         <label>Version :</label>
