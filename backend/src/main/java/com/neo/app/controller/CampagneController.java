@@ -75,13 +75,6 @@ import java.util.UUID;
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         }
-    @PutMapping("/user/{userId}/{id}")
-    @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<CampagneEntity> updateCampaignByUserId(@PathVariable String userId, @PathVariable String id, @RequestBody CampagneEntity campaign) {
-        return campagneService.updateCampaignByUserId(userId, id, campaign)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
         @DeleteMapping("/{id}")
         @CrossOrigin(origins = "http://localhost:4200")
@@ -104,11 +97,6 @@ import java.util.UUID;
             // Implémentez ici la logique pour générer un fichier d'export.
             return ResponseEntity.ok("Campaign export feature not yet implemented.");
         }
-    @GetMapping("/user/{userId}")
-    public List<CampagneEntity> getCampaignsByUserId(@PathVariable String userId) {
-        return campagneService.getCampaignsByUserId(userId);
+
+
     }
-
-
-
-}

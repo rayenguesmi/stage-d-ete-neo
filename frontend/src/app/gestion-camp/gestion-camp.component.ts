@@ -89,11 +89,8 @@ export class GestionCampComponent implements OnInit {
 
   generateNewId(): number {
     return this.tableData.length > 0
-      ? Math.max(...this.tableData.map((item) => item.id)) + 1
+      ? Math.max(...this.tableData.map((item) => item.id || 0)) + 1
       : 1;
-  }
-  generateFrontendId(): string {
-    return 'front_' + Math.random().toString(36).substr(2, 9); // Génère un ID unique pour le frontend
   }
 
   showPopupMessage(message: string, type: 'success' | 'error' | 'info'): void {
@@ -197,13 +194,12 @@ export class GestionCampComponent implements OnInit {
         return;
       }
 
-      const generatedId = this.generateFrontendId();
+      const generatedId = this.generateNewId(); // Générer un ID entier simple
       const newItem = {
         ...this.editData,
-        id: generatedId,
-        id2: generatedId,
+        id: generatedId, // ID entier
+        id2: generatedId, // Même ID utilisé pour id2
       };
-
       this.http.post('http://localhost:8090/api/campaigns', newItem).subscribe({
         next: () => {
           this.showPopupMessage(
@@ -264,8 +260,8 @@ export class GestionCampComponent implements OnInit {
       // Générer un nouvel ID unique pour la duplication
       const duplicatedItem = {
         ...item,
-        id: this.generateFrontendId(), // Utiliser un ID unique
-        id2: this.generateFrontendId(), // Assurez-vous de l'ID id2 aussi
+        id: this.generateNewId(), // Utiliser un ID unique
+        id2: this.generateNewId(), // Assurez-vous de l'ID id2 aussi
       };
 
       // Ajouter l'élément dupliqué à la liste
