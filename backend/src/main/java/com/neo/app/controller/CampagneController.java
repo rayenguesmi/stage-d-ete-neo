@@ -154,6 +154,12 @@ import java.util.*;
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
+    @GetMapping("/{campaignId}/assignedDocs")
+    public ResponseEntity<List<String>> getAssignedDocuments(@PathVariable String campaignId) {
+        List<String> assignedDocs = campagneService.getAssignedDocuments(campaignId);
+        return ResponseEntity.ok(assignedDocs);
+    }
+
 
 
 

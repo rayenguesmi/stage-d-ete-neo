@@ -119,7 +119,17 @@ public class CampagneService {
 
         // Sauvegarder la campagne
         campagneRepository.save(campagne);
+
     }
+    public List<String> getAssignedDocuments(String campaignId) {
+        // Récupérer la campagne de la base de données par son ID
+        CampagneEntity campagne = campagneRepository.findById(campaignId)
+                .orElseThrow(() -> new RuntimeException("Campagne avec l'ID " + campaignId + " non trouvée"));
+
+        return campagne.getListedoc();  // assuming 'listedoc' contains the filenames
+    }
+
+
 
 }
 

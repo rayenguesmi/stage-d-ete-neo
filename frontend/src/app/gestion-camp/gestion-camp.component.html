@@ -205,7 +205,7 @@
   <div class="popup" *ngIf="showPopup">
     <span>{{ popupMessage }}</span>
   </div>
-  <!-- Popup pour affecter des documents -->
+  <!-- Popup Modal pour l'affectation des documents -->
   <div *ngIf="showAssignDocsModal" class="modal">
     <div class="modal-content">
       <button class="close-btn" (click)="closeAssignDocsModal()">
@@ -219,7 +219,6 @@
           <thead>
             <tr>
               <th>
-                <!-- Checkbox "Sélectionner tous" dans l'en-tête -->
                 <input
                   type="checkbox"
                   (change)="selectAllFiles($event)"

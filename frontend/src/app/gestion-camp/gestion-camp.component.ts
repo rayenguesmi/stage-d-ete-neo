@@ -30,7 +30,7 @@ export class GestionCampComponent implements OnInit {
   showAssignDocsModal: boolean = false;
   userFiles: any[] = []; // Liste des fichiers disponibles
   selectedFiles: any[] = []; // Fichiers sélectionnés pour affectation
-  campagneId: number | null = null; // Define campagneId
+  campagneId: string = ''; // Define campagneId
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -371,17 +371,12 @@ export class GestionCampComponent implements OnInit {
     }
   }
 
-  // Méthode pour ouvrir la popup
   assignDocuments(campagne: any): void {
     this.campagneId = campagne.id;
-    this.showAssignDocsModal = true;
-    this.getUserFiles(); // Récupérer les fichiers de l'utilisateur
-  }
+    this.getUserFiles(); // Récupère les fichiers utilisateur
 
-  // Méthode pour fermer la popup
-  closeAssignDocsModal(): void {
-    this.showAssignDocsModal = false;
-    this.selectedFiles = []; // Réinitialiser la sélection
+    // Une fois les fichiers récupérés, lance la logique d'affectation
+    // this.openAssignDocsModal(this.campagneId);
   }
 
   // Méthode pour récupérer les fichiers de l'utilisateur
@@ -410,6 +405,7 @@ export class GestionCampComponent implements OnInit {
               filename: file.filename,
               selected: false, // Initialisation de la sélection à false
             }));
+            this.openAssignDocsModal(this.campagneId);
           }
         },
         error: (error) => {
@@ -437,14 +433,13 @@ export class GestionCampComponent implements OnInit {
     this.http
       .post(
         `http://localhost:8090/api/campaigns/${this.campagneId}/assignDocs`,
-        this.userFiles
-          .filter((file) => file.selected)
-          .map((file) => file.filename)
+        selectedDocs.map((file) => file.filename) // Extraire les noms de fichiers sélectionnés
       )
       .subscribe({
         next: (response) => {
           console.log('Réponse complète du backend:', response); // Affiche la réponse complète
           this.showPopupMessage('Documents assignés avec succès.', 'success');
+          this.showAssignDocsModal = false; // Fermer le modal après l'affectation réussie
         },
         error: (err) => {
           console.error("Erreur lors de l'affectation des documents:", err); // Affiche l'erreur complète
@@ -470,5 +465,43 @@ export class GestionCampComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     const selectAll = target.checked; // Vérifie si la case "Tout sélectionner" est cochée
     this.userFiles.forEach((file) => (file.selected = selectAll));
+  }
+  // Méthode pour ouvrir le modal et marquer les fichiers affectés comme sélectionnés
+  openAssignDocsModal(campagneId: string): void {
+    this.userFiles.forEach((file) => (file.selected = false));
+    this.http
+      .get<string[]>(
+        `http://localhost:8090/api/campaigns/${campagneId}/assignedDocs`
+      )
+      .subscribe({
+        next: (assignedDocs: string[]) => {
+          // Mettre à jour les fichiers sélectionnés en fonction des fichiers affectés
+          this.userFiles.forEach((file) => {
+            file.selected = assignedDocs.includes(file.filename);
+          });
+
+          // Afficher le modal avec les fichiers déjà sélectionnés
+          this.showAssignDocsModal = true;
+        },
+        error: (error) => {
+          console.error(
+            'Erreur lors de la récupération des fichiers assignés:',
+            error
+          );
+          this.showPopupMessage(
+            'Erreur lors de la récupération des fichiers assignés.',
+            'error'
+          );
+        },
+      });
+  }
+
+  // Méthode pour fermer le modal
+  closeAssignDocsModal(): void {
+    this.showAssignDocsModal = false;
+    // Vous pouvez également réinitialiser les sélections si nécessaire
+    this.userFiles.forEach((file) => {
+      file.selected = false; // Réinitialiser si nécessaire
+    });
   }
 }
