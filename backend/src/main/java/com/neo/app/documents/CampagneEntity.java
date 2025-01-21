@@ -3,6 +3,7 @@ package com.neo.app.documents;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
+import java.util.List;
 
 @Document(collection = "campaigns")
 public class CampagneEntity {
@@ -21,7 +22,7 @@ public class CampagneEntity {
     private LocalDate updatedAt; // LocalDate pour updatedAt
     private String userId; // Associer chaque campagne à un utilisateur
     private String id2; // Ajout du champ id2 pour identifier l'entité côté frontend
-
+    private List<String> listedoc; // Liste des documents affectés (par leurs IDs)
     // Getters et Setters
     public String getId2() {
         return id2;  // Getter pour id2
@@ -102,7 +103,13 @@ public class CampagneEntity {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
+    public List<String> getListedoc() {
+        return listedoc;
+    }
 
+    public void setListedoc(List<String> listedoc) {
+        this.listedoc = listedoc;
+    }
     public LocalDate getCreatedAt() {
         return createdAt;
     }
@@ -127,3 +134,4 @@ public class CampagneEntity {
         this.userId = userId;
     }
 }
+

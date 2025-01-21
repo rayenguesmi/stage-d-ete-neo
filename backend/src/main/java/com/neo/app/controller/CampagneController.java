@@ -3,6 +3,7 @@ import com.neo.app.service.CampagneService;
 import com.neo.app.documents.CampagneEntity;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -16,10 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.List;
-
-import java.util.Optional;
-
+import java.util.*;
 
 
 @RestController
@@ -136,6 +134,27 @@ import java.util.Optional;
                 .headers(headers)
                 .body(outputStream.toByteArray());
     }
+    @PostMapping("/{campaignId}/assignDocs")
+    public ResponseEntity<Map<String, String>> assignDocumentsToCampaign(
+            @PathVariable String campaignId,
+            @RequestBody List<String> files) {
+        // Vérifie si la liste des fichiers est vide ou nulle
+        if (files == null || files.isEmpty()) {
+            throw new IllegalArgumentException("La liste des fichiers ne peut pas être vide.");
+        }
 
+        // Appelle le service pour affecter les documents à la campagne
+        campagneService.assignDocumentsToCampaign(campaignId, files);
 
+        // Retourne une réponse JSON avec un message de succès
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Documents affectés avec succès");
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
+
+
+
+}

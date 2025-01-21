@@ -27,7 +27,10 @@ export class GestionCampComponent implements OnInit {
   userId: string | null = null;
   roles: string[] = [];
   hasCampaignRole = false;
-
+  showAssignDocsModal: boolean = false;
+  userFiles: any[] = []; // Liste des fichiers disponibles
+  selectedFiles: any[] = []; // Fichiers sélectionnés pour affectation
+  campagneId: number | null = null; // Define campagneId
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -93,7 +96,10 @@ export class GestionCampComponent implements OnInit {
       : 1;
   }
 
-  showPopupMessage(message: string, type: 'success' | 'error' | 'info'): void {
+  showPopupMessage(
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning'
+  ): void {
     this.popupMessage = `${type.toUpperCase()}: ${message}`;
     this.showPopup = true;
     setTimeout(() => (this.showPopup = false), 4000);
@@ -363,5 +369,106 @@ export class GestionCampComponent implements OnInit {
       this.currentPage++;
       this.updatePagedTableData();
     }
+  }
+
+  // Méthode pour ouvrir la popup
+  assignDocuments(campagne: any): void {
+    this.campagneId = campagne.id;
+    this.showAssignDocsModal = true;
+    this.getUserFiles(); // Récupérer les fichiers de l'utilisateur
+  }
+
+  // Méthode pour fermer la popup
+  closeAssignDocsModal(): void {
+    this.showAssignDocsModal = false;
+    this.selectedFiles = []; // Réinitialiser la sélection
+  }
+
+  // Méthode pour récupérer les fichiers de l'utilisateur
+  getUserFiles(): void {
+    if (!this.userId) {
+      this.showPopupMessage('Utilisateur non authentifié', 'error');
+      return;
+    }
+
+    console.log(
+      `URL pour récupérer les fichiers de l'utilisateur: http://localhost:8090/api/files/${this.userId}`
+    );
+
+    this.http
+      .get<any[]>(`http://localhost:8090/api/files/${this.userId}`)
+      .subscribe({
+        next: (files) => {
+          if (files.length === 0) {
+            this.showPopupMessage(
+              'Aucun fichier trouvé pour cet utilisateur.',
+              'info'
+            );
+          } else {
+            console.log('Fichiers récupérés:', files);
+            this.userFiles = files.map((file) => ({
+              filename: file.filename,
+              selected: false, // Initialisation de la sélection à false
+            }));
+          }
+        },
+        error: (error) => {
+          console.error('Erreur lors de la récupération des fichiers:', error);
+          this.showPopupMessage(
+            'Erreur lors de la récupération des fichiers.',
+            'error'
+          );
+        },
+      });
+  }
+  // Méthode pour confirmer l'affectation des documents
+  confirmAssignDocs(): void {
+    const selectedDocs = this.userFiles.filter((file) => file.selected); // Filtrer les fichiers sélectionnés
+
+    if (selectedDocs.length === 0) {
+      this.showPopupMessage(
+        'Veuillez sélectionner des documents à affecter.',
+        'warning'
+      );
+      return;
+    }
+
+    // Appel de l'API pour associer les fichiers à la campagne
+    this.http
+      .post(
+        `http://localhost:8090/api/campaigns/${this.campagneId}/assignDocs`,
+        this.userFiles
+          .filter((file) => file.selected)
+          .map((file) => file.filename)
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('Réponse complète du backend:', response); // Affiche la réponse complète
+          this.showPopupMessage('Documents assignés avec succès.', 'success');
+        },
+        error: (err) => {
+          console.error("Erreur lors de l'affectation des documents:", err); // Affiche l'erreur complète
+          if (err.status === 400) {
+            console.error("Détails de l'erreur:", err.error);
+          }
+          this.showPopupMessage(
+            "Erreur lors de l'affectation des documents.",
+            'error'
+          );
+        },
+      });
+  }
+  // Vérifie si tous les fichiers sont sélectionnés
+  isAllSelected(): boolean {
+    return (
+      this.userFiles.length > 0 && this.userFiles.every((file) => file.selected)
+    );
+  }
+
+  // Sélectionne ou désélectionne tous les fichiers
+  selectAllFiles(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const selectAll = target.checked; // Vérifie si la case "Tout sélectionner" est cochée
+    this.userFiles.forEach((file) => (file.selected = selectAll));
   }
 }

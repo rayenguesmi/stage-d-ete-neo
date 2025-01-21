@@ -107,6 +107,9 @@
             <button class="action-btn" (click)="executeTask(item)">
               Lancer l'exécution
             </button>
+            <button class="action-btn" (click)="assignDocuments(item)">
+              Affecter des docs
+            </button>
           </div>
         </td>
       </tr>
@@ -201,5 +204,46 @@
   <!-- Notifications -->
   <div class="popup" *ngIf="showPopup">
     <span>{{ popupMessage }}</span>
+  </div>
+  <!-- Popup pour affecter des documents -->
+  <div *ngIf="showAssignDocsModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeAssignDocsModal()">
+        &#x2715;
+      </button>
+      <h2>Affecter des documents</h2>
+
+      <!-- Liste des fichiers récupérés dans un tableau -->
+      <div *ngIf="userFiles.length > 0">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th>
+                <!-- Checkbox "Sélectionner tous" dans l'en-tête -->
+                <input
+                  type="checkbox"
+                  (change)="selectAllFiles($event)"
+                  [checked]="isAllSelected()"
+                />
+                Sélectionner tous
+              </th>
+              <th>Nom du fichier</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let file of userFiles">
+              <td><input type="checkbox" [(ngModel)]="file.selected" /></td>
+              <td>{{ file.filename }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Boutons pour confirmer ou annuler -->
+      <div class="modal-actions">
+        <button (click)="confirmAssignDocs()">Confirmer</button>
+        <button (click)="closeAssignDocsModal()">Annuler</button>
+      </div>
+    </div>
   </div>
 </div>

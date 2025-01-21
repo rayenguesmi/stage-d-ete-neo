@@ -108,7 +108,18 @@ public class CampagneService {
         }
         return Optional.empty(); // Retourner vide si la campagne n'existe pas
     }
+    public void assignDocumentsToCampaign(String campaignId, List<String> documentIds) {
+        // Récupérer la campagne
+        CampagneEntity campagne = campagneRepository.findById(campaignId)
+                .orElseThrow(() -> new RuntimeException("Campagne introuvable"));
 
+        // Mettre à jour la liste des documents
+        campagne.setListedoc(documentIds);
+        campagne.setUpdatedAt(LocalDate.now()); // Mise à jour de la date de modification
+
+        // Sauvegarder la campagne
+        campagneRepository.save(campagne);
+    }
 
 }
 
