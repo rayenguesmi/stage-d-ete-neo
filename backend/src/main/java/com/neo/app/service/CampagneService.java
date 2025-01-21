@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CampagneService {
@@ -40,8 +41,6 @@ public class CampagneService {
             updatedCampaign.setNbRapports(campaign.getNbRapports());
             updatedCampaign.setDate(campaign.getDate());
             updatedCampaign.setNbExecution(campaign.getNbExecution());
-            updatedCampaign.setId2(campaign.getId2());
-            // Ajoutez d'autres champs à mettre à jour si nécessaire
 
             // Sauvegarder la campagne mise à jour dans la base de données
             return Optional.of(campagneRepository.save(updatedCampaign));
@@ -74,21 +73,42 @@ public class CampagneService {
         return false;
     }
 
+
     // Dupliquer une campagne
     public Optional<CampagneEntity> duplicateCampaign(String id) {
-        return campagneRepository.findById(id).map(existingCampaign -> {
-            CampagneEntity newCampaign = new CampagneEntity();
-            newCampaign.setTitre(existingCampaign.getTitre());
-            newCampaign.setVersion(existingCampaign.getVersion());
-            newCampaign.setNbRapports(existingCampaign.getNbRapports());
-            newCampaign.setDate(existingCampaign.getDate());
-            newCampaign.setNbExecution(existingCampaign.getNbExecution());
-            newCampaign.setStatus(existingCampaign.getStatus());
-            newCampaign.setStartDate(existingCampaign.getStartDate());
-            newCampaign.setEndDate(existingCampaign.getEndDate());
-            newCampaign.setCreatedAt(LocalDate.now());
-            newCampaign.setUpdatedAt(LocalDate.now());
-            return campagneRepository.save(newCampaign);
-        });
+        // Récupérer la campagne d'origine
+        Optional<CampagneEntity> existingCampaign = campagneRepository.findById(id);
+        if (existingCampaign.isPresent()) {
+            CampagneEntity original = existingCampaign.get();
+
+            // Trouver le dernier ID existant dans la base
+            int lastId = campagneRepository.findAll()
+                    .stream()
+                    .mapToInt(campaign -> Integer.parseInt(campaign.getId()))
+                    .max()
+                    .orElse(0); // Par défaut, 0 si aucune campagne n'existe
+
+            // Incrémenter l'ID
+            int nextId = lastId + 1;
+
+            // Créer une nouvelle campagne à partir de l'original
+            CampagneEntity duplicate = new CampagneEntity();
+            duplicate.setId(String.valueOf(nextId)); // Attribuer un nouvel ID
+            duplicate.setTitre(original.getTitre()); // Ajouter "(Copie)" au titre
+            duplicate.setVersion(original.getVersion());
+            duplicate.setDate(original.getDate());
+            duplicate.setNbRapports(original.getNbRapports());
+            duplicate.setNbExecution(original.getNbExecution());
+
+
+            // Sauvegarder la nouvelle entité
+            campagneRepository.save(duplicate);
+
+            return Optional.of(duplicate);
+        }
+        return Optional.empty(); // Retourner vide si la campagne n'existe pas
     }
+
+
 }
+

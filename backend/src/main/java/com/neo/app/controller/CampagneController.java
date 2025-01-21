@@ -1,17 +1,25 @@
 package com.neo.app.controller;
 import com.neo.app.service.CampagneService;
 import com.neo.app.documents.CampagneEntity;
-import com.neo.app.repository.CampagneRepository;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
-import java.util.UUID;
+
+import java.util.Optional;
+
 
 
 @RestController
@@ -48,11 +56,6 @@ import java.util.UUID;
                 return ResponseEntity.badRequest().body(null); // Nb d'exécution manquant
             }
 
-            // Validation de la date si elle n'est pas dans le futur
-            if (campaign.getDate().isAfter(LocalDate.now())) {
-                logger.error("La date de la campagne ne peut pas être dans le futur");
-                return ResponseEntity.badRequest().body(null); // Date dans le futur
-            }
 
             try {
                 logger.debug("Détails de la campagne: {}", campaign);
@@ -85,18 +88,54 @@ import java.util.UUID;
             return ResponseEntity.notFound().build();
         }
 
-        @PostMapping("/{id}/duplicate")
-        @CrossOrigin(origins = "http://localhost:4200")
-        public ResponseEntity<CampagneEntity> duplicateCampaign(@PathVariable String id) {
-            return campagneService.duplicateCampaign(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+
+    @PutMapping("/{id}/duplicate")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<CampagneEntity> duplicateCampaign(@PathVariable String id) {
+        // Appel au service pour dupliquer la campagne
+        Optional<CampagneEntity> duplicatedCampaign = campagneService.duplicateCampaign(id);
+
+        // Vérifier si la duplication a réussi
+        if (duplicatedCampaign.isPresent()) {
+            return ResponseEntity.ok(duplicatedCampaign.get());  // Retourner la campagne dupliquée
+        } else {
+            return ResponseEntity.notFound().build();  // Retourner 404 si la campagne n'existe pas
         }
-        @GetMapping("/export")
-        public ResponseEntity<String> exportCampaigns() {
-            // Implémentez ici la logique pour générer un fichier d'export.
-            return ResponseEntity.ok("Campaign export feature not yet implemented.");
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportCampaigns() throws IOException {
+        // Récupérer toutes les campagnes
+        List<CampagneEntity> campagnes = campagneService.getAllCampaigns();
+
+        // Créer un flux d'export en CSV
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Writer writer = new OutputStreamWriter(outputStream, "UTF-8");
+
+        // En-tête CSV
+        writer.write("ID,Titre,Version,Date,NbRapports,NbExecution\n");
+
+        // Données des campagnes
+        for (CampagneEntity campagne : campagnes) {
+            writer.write(String.format("%s,%s,%s,%s,%d,%d\n",
+                    campagne.getId(),
+                    campagne.getTitre(),
+                    campagne.getVersion(),
+                    campagne.getDate(),
+                    campagne.getNbRapports(),
+                    campagne.getNbExecution()
+            ));
         }
+
+        writer.flush();
+
+        // Configuration de la réponse
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=campaigns.csv");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(outputStream.toByteArray());
+    }
 
 
     }

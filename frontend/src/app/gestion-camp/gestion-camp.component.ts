@@ -101,16 +101,14 @@ export class GestionCampComponent implements OnInit {
 
   exportData(): void {
     this.http
-      .get(`http://localhost:8090/api/campaigns/export`, {
-        responseType: 'text',
+      .get('http://localhost:8090/api/campaigns/export', {
+        responseType: 'blob',
       })
       .subscribe({
         next: (response) => {
-          const blob = new Blob([response], {
-            type: 'text/csv;charset=utf-8;',
-          });
           const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
+          const url = window.URL.createObjectURL(response);
+          link.href = url;
           link.setAttribute('download', 'campaigns.csv');
           document.body.appendChild(link);
           link.click();
@@ -128,22 +126,37 @@ export class GestionCampComponent implements OnInit {
       });
   }
 
-  duplicateCampaign(campaignId: string): void {
-    this.http
-      .post<any>(
-        `http://localhost:8090/api/campaigns/${campaignId}/duplicate`,
-        {}
-      )
-      .subscribe({
-        next: () => {
-          this.showPopupMessage('Campagne dupliquée avec succès.', 'success');
-          this.getCampaigns();
-        },
-        error: (error) => {
-          console.error('Erreur lors de la duplication:', error);
-          this.showPopupMessage('Échec de la duplication.', 'error');
-        },
-      });
+  duplicateCampaign(item: any): void {
+    if (!this.userId) {
+      this.showPopupMessage('Utilisateur non authentifié.', 'error');
+      return;
+    }
+
+    // Demander confirmation avant de dupliquer
+    this.confirmAction('Voulez-vous vraiment dupliquer cet élément ?', () => {
+      this.http
+        .put<any>(
+          `http://localhost:8090/api/campaigns/${item.id}/duplicate`,
+          {}
+        )
+        .subscribe({
+          next: (duplicatedCampaign) => {
+            // Ajouter la campagne dupliquée à la table locale
+            this.tableData.push(duplicatedCampaign);
+            console.log('ID de la campagne à dupliquer :', item.id);
+
+            // Mettre à jour les données paginées pour refléter la nouvelle ligne
+            this.updatePagedTableData();
+
+            // Afficher un message de succès
+            this.showPopupMessage('Campagne dupliquée avec succès.', 'success');
+          },
+          error: (error) => {
+            console.error('Erreur lors de la duplication:', error);
+            this.showPopupMessage('Échec de la duplication.', 'error');
+          },
+        });
+    });
   }
 
   openAddModal(): void {
@@ -164,7 +177,7 @@ export class GestionCampComponent implements OnInit {
 
       this.http
         .put(
-          `http://localhost:8090/api/campaigns/${updatedItem.id2}`,
+          `http://localhost:8090/api/campaigns/${updatedItem.id}`,
           updatedItem
         )
         .subscribe({
@@ -198,7 +211,6 @@ export class GestionCampComponent implements OnInit {
       const newItem = {
         ...this.editData,
         id: generatedId, // ID entier
-        id2: generatedId, // Même ID utilisé pour id2
       };
       this.http.post('http://localhost:8090/api/campaigns', newItem).subscribe({
         next: () => {
@@ -261,19 +273,14 @@ export class GestionCampComponent implements OnInit {
       const duplicatedItem = {
         ...item,
         id: this.generateNewId(), // Utiliser un ID unique
-        id2: this.generateNewId(), // Assurez-vous de l'ID id2 aussi
       };
 
-      // Ajouter l'élément dupliqué à la liste
       this.tableData.push(duplicatedItem);
 
-      // Mettre à jour les données paginées pour refléter la nouvelle ligne
       this.updatePagedTableData();
 
-      // Afficher un message de succès
       this.showPopupMessage('Document dupliqué avec succès', 'success');
 
-      // Fermer la popup de confirmation
       this.closeConfirmation();
     });
   }
@@ -301,12 +308,22 @@ export class GestionCampComponent implements OnInit {
 
   confirmDeletion(item: any): void {
     this.confirmAction('Voulez-vous vraiment supprimer cet élément ?', () => {
-      const index = this.tableData.indexOf(item);
-      if (index !== -1) {
-        this.tableData.splice(index, 1);
-      }
-      this.updatePagedTableData();
-      this.showPopupMessage('Document supprimé', 'error');
+      this.http
+        .delete(`http://localhost:8090/api/campaigns/${item.id}`)
+        .subscribe({
+          next: () => {
+            const index = this.tableData.indexOf(item);
+            if (index !== -1) {
+              this.tableData.splice(index, 1);
+              this.updatePagedTableData();
+            }
+            this.showPopupMessage('Document supprimé avec succès.', 'success');
+          },
+          error: (error) => {
+            console.error('Erreur lors de la suppression:', error);
+            this.showPopupMessage('Erreur lors de la suppression.', 'error');
+          },
+        });
     });
   }
 
