@@ -34,6 +34,7 @@ export class GestionCampComponent implements OnInit {
   showDetailsModal = false;
   selectedCampaign: any = null;
   assignedDocs: string[] = [];
+  sortOrder: { [key: string]: 'asc' | 'desc' } = {};
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -168,7 +169,7 @@ export class GestionCampComponent implements OnInit {
     });
   }
 
-  openAddModal(): void {
+  openAddCamp(): void {
     this.showAddModal = true;
     this.isEditMode = false;
 
@@ -270,7 +271,17 @@ export class GestionCampComponent implements OnInit {
   }
 
   sortByColumn(column: string): void {
-    this.tableData.sort((a, b) => (a[column] > b[column] ? 1 : -1));
+    this.sortOrder[column] = this.sortOrder[column] === 'asc' ? 'desc' : 'asc';
+
+    const orderMultiplier = this.sortOrder[column] === 'asc' ? 1 : -1;
+
+    this.tableData.sort((a, b) => {
+      if (a[column] > b[column]) return orderMultiplier;
+      if (a[column] < b[column]) return -orderMultiplier;
+      return 0;
+    });
+
+    // Mettre à jour les données paginées
     this.updatePagedTableData();
   }
 
@@ -382,8 +393,6 @@ export class GestionCampComponent implements OnInit {
     this.getUserFiles(); // Récupère les fichiers utilisateur
     this.showDetailsModal = false;
     this.showAssignDocsModal = true;
-    // Une fois les fichiers récupérés, lance la logique d'affectation
-    // this.openAssignDocsModal(this.campagneId);
   }
 
   // Méthode pour récupérer les fichiers de l'utilisateur

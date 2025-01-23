@@ -1,1 +1,153 @@
-<h2 style="text-align: center">Gestion des executions</h2>
+<div class="container">
+  <h2 class="title">
+    <i class="fa fa-calendar-check"></i> Gestion des Exécutions
+  </h2>
+  <div class="top-bar">
+    <div class="left-section">
+      <div class="buttons-group">
+        <button class="btn-icon" (click)="openAddExec()">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="btn-icon" (click)="exportData()">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </button>
+        <button class="btn-icon" (click)="reloadPage()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <div class="search-container">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          [(ngModel)]="searchQuery"
+          (input)="filterTable()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des Exécutions -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom de campagne</th>
+        <th>
+          Date Mise à Jour
+          <button class="sort-btn" (click)="sortByColumn('updatedDate')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>Statut</th>
+        <th>Demandé Par</th>
+        <th>Résultat</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let execution of pagedTableData">
+        <!-- Utilisation de pagedTableData pour la pagination -->
+        <td>{{ execution.id }}</td>
+        <td>{{ execution.campaignId }}</td>
+        <!-- Affichage du Nom de la campagne -->
+        <td>{{ execution.updatedDate }}</td>
+        <td>
+          <span *ngIf="execution.status === 'Terminé'">
+            <i class="fas fa-check-circle" style="color: green"></i> Terminé
+          </span>
+          <span *ngIf="execution.status === 'En cours'">
+            <i
+              class="fas fa-sync-alt"
+              style="color: orange; animation: spin 1s infinite"
+            ></i>
+            En cours
+          </span>
+          <span *ngIf="execution.status === 'Annulé'">
+            <i class="fas fa-times-circle" style="color: red"></i> Annulé
+          </span>
+        </td>
+        <td>{{ execution.requestedBy }}</td>
+        <td>
+          <span *ngIf="execution.result === 'Succès'">
+            <i class="fas fa-check-circle" style="color: green"></i> Succès
+          </span>
+          <span *ngIf="execution.result === 'Échec'">
+            <i class="fas fa-times-circle" style="color: red"></i> Échec
+          </span>
+          <span *ngIf="execution.result === 'En attente'">
+            <i class="fas fa-hourglass-half" style="color: orange"></i> En
+            attente
+          </span>
+        </td>
+        <td>
+          <span
+            class="three-dots"
+            (click)="toggleExecutionMenu($event, execution.id)"
+            aria-label="Menu d'actions"
+          >
+            &#x2022;&#x2022;&#x2022;
+          </span>
+          <div
+            *ngIf="
+              executionMenuVisible && activeExecutionMenuId === execution.id
+            "
+            class="dropdown-menu"
+          >
+            <button class="action-btn" (click)="editExecution(execution)">
+              Modifier
+            </button>
+            <button class="action-btn" (click)="putOnHoldExecution(execution)">
+              Mettre en attente
+            </button>
+            <button class="action-btn" (click)="deleteExecution(execution)">
+              Supprimer
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal pour ajouter/éditer une exécution -->
+<div *ngIf="showAddExecModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" (click)="closeExecModal()">&#x2715;</button>
+    <h2>{{ isEditModeExec ? "Modifier" : "Ajouter" }} une exécution</h2>
+    <form (submit)="submitExecForm()">
+      <label>Nom de Campagne :</label>
+      <select
+        [(ngModel)]="selectedCampaignName"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <option *ngFor="let campaign of campaigns" [value]="campaign.titre">
+          {{ campaign.titre }}
+        </option>
+      </select>
+
+      <label>Date Mise à Jour :</label>
+      <input
+        [(ngModel)]="editExecData.updatedDate"
+        name="updatedDate"
+        type="date"
+        required
+      />
+
+      <label>Demandé Par :</label>
+      <select
+        [(ngModel)]="editExecData.requestedBy"
+        name="requestedBy"
+        required
+      >
+        <option value="" disabled selected>
+          -- Sélectionnez un utilisateur --
+        </option>
+        <option *ngFor="let user of users" [value]="user">{{ user }}</option>
+      </select>
+
+      <button type="submit">
+        {{ isEditModeExec ? "Enregistrer" : "Ajouter" }}
+      </button>
+    </form>
+  </div>
+</div>
