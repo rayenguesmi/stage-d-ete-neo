@@ -31,6 +31,9 @@ export class GestionCampComponent implements OnInit {
   userFiles: any[] = []; // Liste des fichiers disponibles
   selectedFiles: any[] = []; // Fichiers sélectionnés pour affectation
   campagneId: string = ''; // Define campagneId
+  showDetailsModal = false;
+  selectedCampaign: any = null;
+  assignedDocs: string[] = [];
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -168,6 +171,7 @@ export class GestionCampComponent implements OnInit {
   openAddModal(): void {
     this.showAddModal = true;
     this.isEditMode = false;
+
     this.editData = {};
   }
 
@@ -244,6 +248,8 @@ export class GestionCampComponent implements OnInit {
   openModal(item: any): void {
     this.showEditModal = true;
     this.isEditMode = true;
+
+    this.showDetailsModal = false;
     this.editData = { ...item };
   }
 
@@ -374,7 +380,8 @@ export class GestionCampComponent implements OnInit {
   assignDocuments(campagne: any): void {
     this.campagneId = campagne.id;
     this.getUserFiles(); // Récupère les fichiers utilisateur
-
+    this.showDetailsModal = false;
+    this.showAssignDocsModal = true;
     // Une fois les fichiers récupérés, lance la logique d'affectation
     // this.openAssignDocsModal(this.campagneId);
   }
@@ -503,5 +510,44 @@ export class GestionCampComponent implements OnInit {
     this.userFiles.forEach((file) => {
       file.selected = false; // Réinitialiser si nécessaire
     });
+  }
+
+  showDetails(campaign: any): void {
+    this.selectedCampaign = campaign;
+    this.fetchAssignedDocs(campaign.id);
+    this.showDetailsModal = true;
+    this.showEditModal = false; // Masque la modal de modification
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedCampaign = null;
+    this.assignedDocs = [];
+  }
+
+  fetchAssignedDocs(campaignId: string): void {
+    this.http
+      .get<string[]>(
+        `http://localhost:8090/api/campaigns/${campaignId}/assignedDocs`
+      )
+      .subscribe({
+        next: (docs) => {
+          this.assignedDocs = docs;
+        },
+        error: (err) => {
+          console.error(
+            'Erreur lors de la récupération des documents assignés:',
+            err
+          );
+          this.showPopupMessage(
+            'Erreur lors de la récupération des documents assignés.',
+            'error'
+          );
+        },
+      });
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
   }
 }

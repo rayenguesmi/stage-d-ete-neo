@@ -81,6 +81,9 @@
             *ngIf="menuVisible && activeMenuId === item.id"
             class="dropdown-menu"
           >
+            <button class="action-btn" (click)="showDetails(item)">
+              Détails
+            </button>
             <button class="action-btn" (click)="openModal(item)">
               Modifier
             </button>
@@ -242,6 +245,46 @@
       <div class="modal-actions">
         <button (click)="confirmAssignDocs()">Confirmer</button>
         <button (click)="closeAssignDocsModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup Détails -->
+  <div *ngIf="showDetailsModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeDetailsModal()">&#x2715;</button>
+      <h2>Détails de la campagne</h2>
+
+      <div class="details-section">
+        <!-- Première partie : Infos de la campagne -->
+        <div class="campaign-info">
+          <h3>Informations de la campagne</h3>
+          <p><strong>ID :</strong> {{ selectedCampaign?.id }}</p>
+          <p><strong>Titre :</strong> {{ selectedCampaign?.titre }}</p>
+          <p><strong>Version :</strong> {{ selectedCampaign?.version }}</p>
+          <p>
+            <strong>Nb de Rapports :</strong> {{ selectedCampaign?.nbRapports }}
+          </p>
+          <p><strong>Date :</strong> {{ selectedCampaign?.date }}</p>
+          <p>
+            <strong>Nb d'Exécution :</strong>
+            {{ selectedCampaign?.nbExecution }}
+          </p>
+          <p>
+            <strong>Dernière exécution :</strong>
+            {{ selectedCampaign?.lastExecution }}
+          </p>
+          <button (click)="openModal(selectedCampaign)">Modifier Infos</button>
+        </div>
+
+        <!-- Deuxième partie : Affectation de documents -->
+        <div class="doc-assignment">
+          <h3>Affectation de documents</h3>
+          <ul>
+            <li *ngFor="let doc of assignedDocs">{{ doc }}</li>
+          </ul>
+          <button (click)="assignDocuments(selectedCampaign)">Modifier</button>
+        </div>
       </div>
     </div>
   </div>

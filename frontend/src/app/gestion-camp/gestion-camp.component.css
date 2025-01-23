@@ -97,18 +97,25 @@ table th {
   background-color: #ccc;
   cursor: not-allowed;
 }
-
 .modal {
+  position: fixed; /* Important pour que la popup soit positionnée par rapport à la fenêtre */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* Assurez-vous que ce chiffre est plus grand que celui des autres éléments */
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 8px;
+}
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5); /* Couleur semi-transparente */
+  z-index: 999; /* Juste en dessous de la popup */
 }
 
 .modal-content {
@@ -119,6 +126,7 @@ table th {
   width: 400px;
   position: relative;
   text-align: center;
+  z-index: 1040;
 }
 
 .modal-content h2 {
@@ -141,7 +149,15 @@ table th {
   border-radius: 5px;
   cursor: pointer;
 }
-
+.modal-content-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040; /* Juste en dessous de la modal */
+}
 .modal-content button:hover {
   background-color: #4a0fb8;
 }
@@ -292,17 +308,6 @@ table th {
   color: #721c24;
   border: 1px solid #f5c6cb;
 }
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .modal-content {
   background-color: #fff;
@@ -362,4 +367,25 @@ h2 {
 .modal-actions button:hover {
   background-color: #007bff;
   color: white;
+}
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.details-section {
+  display: flex;
+  justify-content: space-between;
+}
+
+.campaign-info,
+.doc-assignment {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.doc-assignment ul {
+  list-style: none;
+  padding: 0;
 }
