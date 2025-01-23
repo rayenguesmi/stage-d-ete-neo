@@ -274,7 +274,12 @@
             <strong>Dernière exécution :</strong>
             {{ selectedCampaign?.lastExecution }}
           </p>
-          <button (click)="openModal(selectedCampaign)">Modifier Infos</button>
+          <!-- Icône de modification -->
+          <i
+            class="fas fa-edit edit-icon"
+            (click)="openModal(selectedCampaign)"
+            title="Modifier Infos"
+          ></i>
         </div>
 
         <!-- Deuxième partie : Affectation de documents -->
@@ -283,7 +288,12 @@
           <ul>
             <li *ngFor="let doc of assignedDocs">{{ doc }}</li>
           </ul>
-          <button (click)="assignDocuments(selectedCampaign)">Modifier</button>
+          <!-- Icône de modification pour documents -->
+          <i
+            class="fas fa-edit edit-icon"
+            (click)="assignDocuments(selectedCampaign)"
+            title="Modifier Documents"
+          ></i>
         </div>
       </div>
     </div>

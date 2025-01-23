@@ -97,17 +97,7 @@ table th {
   background-color: #ccc;
   cursor: not-allowed;
 }
-.modal {
-  position: fixed; /* Important pour que la popup soit positionnée par rapport à la fenêtre */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000; /* Assurez-vous que ce chiffre est plus grand que celui des autres éléments */
-  background: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  padding: 20px;
-  border-radius: 8px;
-}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -119,14 +109,12 @@ table th {
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: white;
+  margin: 5% auto;
   padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  width: 400px;
-  position: relative;
-  text-align: center;
-  z-index: 1040;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 8px;
 }
 
 .modal-content h2 {
@@ -309,14 +297,6 @@ table th {
   border: 1px solid #f5c6cb;
 }
 
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
 .close-btn {
   background: none;
   border: none;
@@ -368,16 +348,6 @@ h2 {
   background-color: #007bff;
   color: white;
 }
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.details-section {
-  display: flex;
-  justify-content: space-between;
-}
 
 .campaign-info,
 .doc-assignment {
@@ -388,4 +358,48 @@ h2 {
 .doc-assignment ul {
   list-style: none;
   padding: 0;
+}
+.modal {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+.details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: space-between;
+}
+.campaign-info,
+.doc-assignment {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 15px;
+}
+.edit-icon {
+  font-size: 20px;
+  cursor: pointer;
+  color: #007bff;
+  transition: color 0.3s;
+}
+.edit-icon:hover {
+  color: #0056b3;
+}
+.doc-assignment ul {
+  list-style-type: none;
+  padding-left: 0;
 }
