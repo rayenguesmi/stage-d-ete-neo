@@ -7,46 +7,13 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./gestion-exec.component.css'],
 })
 export class GestionExecComponent implements OnInit {
-  executions = [
-    {
-      id: 1,
-      campaignId: 'Campagne 123',
-      updatedDate: '2025-01-23',
-      status: 'Terminé',
-      requestedBy: 'Utilisateur A',
-      result: 'Succès',
-    },
-    {
-      id: 2,
-      campaignId: 'Campagne 124',
-      updatedDate: '2025-01-22',
-      status: 'En cours',
-      requestedBy: 'Utilisateur B',
-      result: 'En attente',
-    },
-    {
-      id: 3,
-      campaignId: 'Campagne 125',
-      updatedDate: '2025-01-21',
-      status: 'Annulé',
-      requestedBy: 'Utilisateur C',
-      result: 'Échec',
-    },
-    {
-      id: 4,
-      campaignId: 'Campagne 126',
-      updatedDate: '2025-01-30',
-      status: 'En cours',
-      requestedBy: 'Utilisateur D',
-      result: 'Succès',
-    },
-  ];
+  executions: any[] = [];
 
-  users = ['User 1', 'User 2', 'User 3'];
   editExecData: any = {
     campaignId: '',
     updatedDate: '',
     requestedBy: '',
+
     status: 'En cours',
     result: 'En attente',
   };
@@ -56,6 +23,7 @@ export class GestionExecComponent implements OnInit {
   totalPages: number = 1;
   showPopup = false;
   popupMessage: string = '';
+  userName: string = '';
   searchQuery: string = '';
   sortOrder: { [key: string]: 'asc' | 'desc' } = {};
   showAddExecModal: boolean = false;
@@ -68,13 +36,18 @@ export class GestionExecComponent implements OnInit {
   executionMenuVisible: boolean = false;
   activeExecutionMenuId: number | null = null;
   selectedCampaignName: string = '';
-
+  isEditMode: boolean = false; // Par défaut, on est en mode création
+  tableData: any[] = []; // Liste principale des campagnes
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.extractRolesFromToken();
     this.loadCampaigns();
+    this.getExecutions();
     this.updatePagedTableData();
+  }
+  loadCampaigns(): void {
+    this.getCampaigns();
   }
 
   private extractRolesFromToken(): void {
@@ -83,7 +56,9 @@ export class GestionExecComponent implements OnInit {
       const payload = this.decodeJwtPayload(token);
       this.roles = payload?.realm_access?.roles || [];
       this.userId = payload?.sub;
-      this.hasCampaignRole = this.roles.includes('ROLE_CAMPAIGN');
+      this.userName =
+        payload?.name || payload?.preferred_username || 'Utilisateur inconnu'; // Extraction du nom de l'utilisateur
+      console.log("Nom de l'utilisateur :", this.userName);
     } else {
       this.showPopupMessage(
         'Aucun token trouvé. Veuillez vous reconnecter.',
@@ -108,12 +83,15 @@ export class GestionExecComponent implements OnInit {
   closeExecModal(): void {
     this.showAddExecModal = false;
   }
+  // Méthode pour soumettre le formulaire
   submitExecForm(): void {
     console.log('editExecData:', this.editExecData);
+    console.log("Nom de l'utilisateur connecté:", this.userName);
+
     if (
       !this.selectedCampaignName ||
       !this.editExecData.updatedDate ||
-      !this.editExecData.requestedBy
+      !this.userName // Vérifier que userName n'est pas vide
     ) {
       this.showPopupMessage(
         'Tous les champs obligatoires doivent être remplis.',
@@ -123,44 +101,32 @@ export class GestionExecComponent implements OnInit {
     }
 
     const newExecution = {
-      campaignId: this.selectedCampaignName, // Utilisez campaignId ici
+      campaignId: this.selectedCampaignName,
       updatedDate: this.editExecData.updatedDate,
-      requestedBy: this.editExecData.requestedBy,
+      requestedBy: this.userName, // Utiliser directement le nom de l'utilisateur connecté
       status: this.editExecData.status,
       result: this.editExecData.result,
-      id: this.generateNewId(), // Génération automatique de l'ID
+      id: this.generateNewId(),
     };
 
-    this.executions.push(newExecution);
-    this.showPopupMessage('Nouvelle exécution ajoutée avec succès.', 'success');
-
-    this.updatePagedTableData();
-    this.closeExecModal();
-    this.resetExecForm();
-  }
-
-  generateNewId(): number {
-    const newId =
-      this.executions.length > 0
-        ? Math.max(...this.executions.map((exec) => exec.id)) + 1
-        : 1;
-
-    console.log('ID généré:', newId); // Debug: afficher l'ID généré
-    return newId;
-  }
-
-  resetExecForm(): void {
-    this.editExecData = {
-      campaignId: '',
-      updatedDate: '',
-      requestedBy: '',
-      status: 'En cours',
-      result: 'En attente',
-    };
-  }
-
-  loadCampaigns(): void {
-    this.getCampaigns();
+    this.http
+      .post('http://localhost:8090/api/executions', newExecution)
+      .subscribe({
+        next: () => {
+          this.showPopupMessage(
+            'Nouvelle exécution ajoutée avec succès.',
+            'success'
+          );
+          this.getExecutions(); // Rafraîchir la liste des exécutions
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'ajout de l'exécution:", error);
+          this.showPopupMessage(
+            "Erreur lors de l'ajout de l'exécution.",
+            'error'
+          );
+        },
+      });
   }
 
   getCampaigns(): void {
@@ -181,6 +147,64 @@ export class GestionExecComponent implements OnInit {
           console.error('Erreur lors de la récupération des campagnes:', error);
           this.showPopupMessage(
             'Erreur lors du chargement des campagnes.',
+            'error'
+          );
+        },
+      });
+  }
+
+  generateNewId(): number {
+    const newId =
+      this.executions.length > 0
+        ? Math.max(...this.executions.map((exec) => exec.id)) + 1
+        : 1;
+
+    console.log('ID généré:', newId); // Debug: afficher l'ID généré
+    return newId;
+  }
+
+  resetExecForm(): void {
+    this.editExecData = {
+      campaignId: '',
+      updatedDate: '',
+      requestedBy: this.userName, // Remplir avec le nom de l'utilisateur
+      status: 'En cours',
+      result: 'En attente',
+    };
+  }
+
+  getExecutions(): void {
+    this.http
+      .get<any[]>(`http://localhost:8090/api/executions?userId=${this.userId}`)
+      .subscribe({
+        next: (data: any[]) => {
+          console.log('Données des exécutions récupérées:', data);
+
+          // Mapper les données de l'API pour correspondre aux colonnes du tableau
+          this.executions = data.map((execution) => {
+            console.log('Statut:', execution.statut); // Vérifier la valeur
+            return {
+              id: execution.id,
+              campaignId: execution.nomDeCampagne,
+              updatedDate: execution.dateMiseAJour,
+              status: execution.statut, // Utiliser 'statut'
+              requestedBy: execution.demandePar,
+              result: execution.resultat, // Utiliser 'resultat'
+            };
+          });
+
+          // Mettre à jour la table paginée avec les données mappées
+          this.updatePagedTableData();
+          console.log('table', this.pagedTableData);
+        },
+        error: (error) => {
+          console.error(
+            'Erreur lors de la récupération des exécutions:',
+            error
+          );
+
+          this.showPopupMessage(
+            'Erreur lors de la récupération des exécutions.',
             'error'
           );
         },
@@ -257,20 +281,30 @@ export class GestionExecComponent implements OnInit {
       );
     }
   }
-  exportData(): void {}
+  exportData(): void {
+    this.http
+      .get('http://localhost:8090/api/executions/export', {
+        responseType: 'blob',
+      })
+      .subscribe({
+        next: (response) => {
+          const link = document.createElement('a');
+          const url = window.URL.createObjectURL(response);
+          link.href = url;
+          link.setAttribute('download', 'executions.csv'); // Change file name to 'executions.csv'
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
 
-  // Méthode appelée lorsqu'une campagne est sélectionnée
-  onCampaignSelectionChange(): void {
-    // Affiche un message pop-up pour indiquer la sélection de la campagne
-    this.showPopupMessage(
-      `Nom de la campagne sélectionnée : ${this.selectedCampaignName}`,
-      'info'
-    );
-
-    // Mettre à jour la table avec le nom de la campagne sélectionnée
-    this.executions.forEach((execution) => {
-      execution.campaignId = this.selectedCampaignName; // Met à jour la campagne de l'exécution
-    });
-    this.updatePagedTableData(); // Mettre à jour la pagination après la mise à jour de la table
+          this.showPopupMessage(
+            'Les exécutions ont été exportées avec succès.',
+            'success'
+          );
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'exportation:", error);
+          this.showPopupMessage("Erreur lors de l'exportation.", 'error');
+        },
+      });
   }
 }

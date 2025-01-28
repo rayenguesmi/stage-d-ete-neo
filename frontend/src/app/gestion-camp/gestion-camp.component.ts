@@ -395,7 +395,6 @@ export class GestionCampComponent implements OnInit {
     this.showAssignDocsModal = true;
   }
 
-  // Méthode pour récupérer les fichiers de l'utilisateur
   getUserFiles(): void {
     if (!this.userId) {
       this.showPopupMessage('Utilisateur non authentifié', 'error');
