@@ -1,7 +1,12 @@
 package com.neo.app.documents;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -10,11 +15,19 @@ public class ExecutionEntity {
 
     @Id
     private String id; // ID unique
+    @Field("nomDeCampagne")
     private String nomDeCampagne;
+    @Field("dateMiseAJour") // Correspondance avec MongoDB
+    @JsonProperty("dateMiseAjour") // Correspondance avec JSON reçu
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dateMiseAJour;
-    private String statut;
+
+    @Field("statut")
+    private String statut = "En cours";
+    @Field("demandePar")
     private String demandePar;
-    private String resultat;
+    private  String resultat = "En attente";
     private String userId;
     private List<String> historique;
 

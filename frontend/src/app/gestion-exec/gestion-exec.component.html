@@ -49,7 +49,8 @@
         <td>{{ execution.id }}</td>
         <td>{{ execution.campaignId }}</td>
         <!-- Correspond à "campaignId" dans le TypeScript -->
-        <td>{{ execution.updatedDate }}</td>
+        <td>{{ execution.dateMiseAjour | date : "yyyy-MM-dd" }}</td>
+
         <!-- Correspond à "updatedDate" -->
         <!-- Statut de l'exécution -->
         <td>
@@ -116,7 +117,7 @@
             "
             class="dropdown-menu"
           >
-            <button class="action-btn" (click)="editExecution(execution)">
+            <button class="action-btn" (click)="openModal(execution)">
               Modifier
             </button>
             <button class="action-btn" (click)="putOnHoldExecution(execution)">
@@ -130,7 +131,26 @@
       </tr>
     </tbody>
   </table>
+  <!-- Pagination sous le tableau -->
+  <div class="pagination-container">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      aria-label="Page précédente"
+    >
+      ←
+    </button>
+    <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      aria-label="Page suivante"
+    >
+      →
+    </button>
+  </div>
 
+  <!-- Modal pour ajouter/éditer une exécution -->
   <!-- Modal pour ajouter/éditer une exécution -->
   <div *ngIf="showAddExecModal" class="modal">
     <div class="modal-content">
@@ -141,19 +161,22 @@
         <select
           [(ngModel)]="selectedCampaignName"
           [ngModelOptions]="{ standalone: true }"
+          required
         >
-          <option *ngFor="let campaign of campaigns" [value]="campaign.titre">
-            {{ campaign.titre }}
+          <option *ngFor="let campaign of campaigns" [value]="campaign.id">
+            {{ campaign.nomDeCampagne }}
           </option>
         </select>
+        <p *ngIf="campaigns.length === 0">Chargement des campagnes...</p>
 
         <label>Date Mise à Jour :</label>
         <input
-          [(ngModel)]="editExecData.updatedDate"
-          name="updatedDate"
+          [(ngModel)]="editExecData.dateMiseAjour"
+          name="dateMiseAjour"
           type="date"
           required
         />
+
         <label>Demandé Par :</label>
         <input
           type="text"
@@ -162,6 +185,7 @@
           disabled
           required
         />
+
         <!-- Afficher le nom de l'utilisateur connecté -->
 
         <button type="submit">

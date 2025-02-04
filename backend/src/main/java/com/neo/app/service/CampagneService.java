@@ -94,7 +94,7 @@ public class CampagneService {
             // Créer une nouvelle campagne à partir de l'original
             CampagneEntity duplicate = new CampagneEntity();
             duplicate.setId(String.valueOf(nextId)); // Attribuer un nouvel ID
-            duplicate.setTitre(original.getTitre()); // Ajouter "(Copie)" au titre
+            duplicate.setTitre(original.getTitre());
             duplicate.setVersion(original.getVersion());
             duplicate.setDate(original.getDate());
             duplicate.setNbRapports(original.getNbRapports());

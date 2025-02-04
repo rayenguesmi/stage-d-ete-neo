@@ -11,7 +11,7 @@ export class GestionExecComponent implements OnInit {
 
   editExecData: any = {
     campaignId: '',
-    updatedDate: '',
+    dateMiseAjour: '',
     requestedBy: '',
 
     status: 'En cours',
@@ -19,9 +19,12 @@ export class GestionExecComponent implements OnInit {
   };
   pagedTableData: any[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 5;
+  itemsPerPage: number = 8;
   totalPages: number = 1;
   showPopup = false;
+  showEditModal: boolean = false;
+  editData: any = {};
+  showDetailsModal: boolean = false;
   popupMessage: string = '';
   userName: string = '';
   searchQuery: string = '';
@@ -77,56 +80,127 @@ export class GestionExecComponent implements OnInit {
   openAddExec(): void {
     this.showAddExecModal = true;
     this.isEditModeExec = false;
+    this.selectedCampaignName = 'none';
     this.resetExecForm();
   }
-
   closeExecModal(): void {
-    this.showAddExecModal = false;
+    this.showAddExecModal = false; // Fermer le modal
+    this.resetExecForm(); // Réinitialiser les données du formulaire
   }
-  // Méthode pour soumettre le formulaire
-  submitExecForm(): void {
-    console.log('editExecData:', this.editExecData);
-    console.log("Nom de l'utilisateur connecté:", this.userName);
 
-    if (
-      !this.selectedCampaignName ||
-      !this.editExecData.updatedDate ||
-      !this.userName // Vérifier que userName n'est pas vide
-    ) {
-      this.showPopupMessage(
-        'Tous les champs obligatoires doivent être remplis.',
-        'error'
-      );
-      return;
+  // Méthode pour soumettre le formulaire
+  openModal(item: any): void {
+    this.showAddExecModal = true;
+    this.isEditModeExec = true;
+
+    // Mettre à jour la campagne sélectionnée avec l'ID de la campagne dans l'exécution
+    const selectedCampaign = this.campaigns.find(
+      (campaign) => campaign.nomDeCampagne === item.nomDeCampagne
+    );
+
+    if (selectedCampaign) {
+      this.selectedCampaignName = selectedCampaign.id.toString(); // Assurez-vous de l'ID de la campagne
     }
 
-    const newExecution = {
-      campaignId: this.selectedCampaignName,
-      updatedDate: this.editExecData.updatedDate,
-      requestedBy: this.userName, // Utiliser directement le nom de l'utilisateur connecté
-      status: this.editExecData.status,
-      result: this.editExecData.result,
-      id: this.generateNewId(),
+    // Remplir les autres champs du formulaire avec les données de l'exécution
+    this.editExecData = {
+      ...item,
+      dateMiseAjour: item.dateMiseAjour, // Si pas de date, utilise la date actuelle
     };
+  }
 
-    this.http
-      .post('http://localhost:8090/api/executions', newExecution)
-      .subscribe({
-        next: () => {
-          this.showPopupMessage(
-            'Nouvelle exécution ajoutée avec succès.',
-            'success'
-          );
-          this.getExecutions(); // Rafraîchir la liste des exécutions
-        },
-        error: (error) => {
-          console.error("Erreur lors de l'ajout de l'exécution:", error);
-          this.showPopupMessage(
-            "Erreur lors de l'ajout de l'exécution.",
-            'error'
-          );
-        },
-      });
+  submitExecForm(): void {
+    console.log("Nom de l'utilisateur connecté:", this.userName);
+
+    // Vérifie si on est en mode édition
+    if (this.isEditModeExec) {
+      const updatedExecItem = { ...this.editExecData };
+      console.log('id de camp à modifier', updatedExecItem.id);
+
+      this.http
+        .put(
+          `http://localhost:8090/api/executions/${updatedExecItem.id}`,
+          updatedExecItem
+        )
+        .subscribe({
+          next: () => {
+            console.log('Exécution modifiée avec succès.');
+            this.showPopupMessage('Exécution modifiée avec succès.', 'success');
+            this.getExecutions(); // Rafraîchir les exécutions après modification
+          },
+          error: (error) => {
+            console.error('Erreur lors de la modification:', error);
+            this.showPopupMessage(
+              "Erreur lors de la modification de l'exécution.",
+              'error'
+            );
+          },
+        });
+    } else {
+      // Sinon, c'est une nouvelle exécution, on l'ajoute
+      if (
+        !this.selectedCampaignName ||
+        !this.editExecData.dateMiseAjour ||
+        !this.userName
+      ) {
+        this.showPopupMessage(
+          'Tous les champs obligatoires doivent être remplis.',
+          'error'
+        );
+        return;
+      }
+
+      // Sélection de la campagne associée à l'exécution
+      const selectedCampaign = this.campaigns.find(
+        (campaign) =>
+          campaign.id.toString() === this.selectedCampaignName.toString()
+      );
+
+      if (!selectedCampaign) {
+        this.showPopupMessage('Campagne sélectionnée invalide.', 'error');
+        return;
+      }
+
+      console.log('Date 1:', this.editExecData.dateMiseAjour);
+      const newExecItem = {
+        id: this.generateNewId().toString(),
+        nomDeCampagne: selectedCampaign.nomDeCampagne,
+        dateMiseAjour: this.editExecData.dateMiseAjour, // La date envoyée depuis le frontend
+        requestedBy: this.userName,
+        status: this.editExecData.status,
+        result: this.editExecData.result,
+        userId: this.userId, // Assurez-vous d'ajouter le userId ici si nécessaire
+        demandePar: this.userName, // Si nécessaire
+      };
+      console.log('Date après:', newExecItem.dateMiseAjour);
+      console.log('Données envoyées à l’API:', newExecItem);
+
+      // Envoi de la nouvelle exécution à l'API
+      this.http
+        .post('http://localhost:8090/api/executions', newExecItem)
+        .subscribe({
+          next: (response) => {
+            console.log("Réponse de l'API:", response);
+            this.showPopupMessage(
+              'Nouvelle exécution ajoutée avec succès.',
+              'success'
+            );
+            this.getExecutions(); // Rafraîchir les données
+            this.showAddExecModal = false;
+          },
+          error: (error) => {
+            console.error("Erreur lors de l'ajout de l'exécution:", error);
+            this.showPopupMessage(
+              "Erreur lors de l'ajout de l'exécution.",
+              'error'
+            );
+          },
+        });
+    }
+
+    // Mettre à jour la table paginée après l'ajout ou la modification
+    this.updatePagedTableData();
+    this.closeExecModal();
   }
 
   getCampaigns(): void {
@@ -140,7 +214,17 @@ export class GestionExecComponent implements OnInit {
       .subscribe({
         next: (data: any[]) => {
           console.log('Campagnes récupérées:', data);
-          this.campaigns = data;
+
+          this.campaigns = data.map((exec) => ({
+            id: exec.id,
+            statut: exec.status,
+            resultat: exec.result,
+            nomDeCampagne: exec.titre, // Correction ici
+            dateMiseAJour: exec.dateMiseAjour,
+            demandePar: exec.requestedBy,
+            historique: exec.historique || null,
+            userId: exec.userId,
+          }));
           this.updatePagedTableData();
         },
         error: (error: any) => {
@@ -154,25 +238,26 @@ export class GestionExecComponent implements OnInit {
   }
 
   generateNewId(): number {
+    // Récupérer le maximum ID existant (même après suppression, vous pouvez vérifier l'ID dans la base de données)
     const newId =
       this.executions.length > 0
         ? Math.max(...this.executions.map((exec) => exec.id)) + 1
         : 1;
 
-    console.log('ID généré:', newId); // Debug: afficher l'ID généré
     return newId;
   }
 
   resetExecForm(): void {
     this.editExecData = {
-      campaignId: '',
-      updatedDate: '',
+      id: null, // Ajout de l'ID
+      nomDeCampagne: '', // Remplacement de campaignId
+      dateMiseAjour: '',
       requestedBy: this.userName, // Remplir avec le nom de l'utilisateur
       status: 'En cours',
       result: 'En attente',
     };
+    this.editExecData = {}; // Réinitialiser les données de l'exécution
   }
-
   getExecutions(): void {
     this.http
       .get<any[]>(`http://localhost:8090/api/executions?userId=${this.userId}`)
@@ -180,29 +265,35 @@ export class GestionExecComponent implements OnInit {
         next: (data: any[]) => {
           console.log('Données des exécutions récupérées:', data);
 
-          // Mapper les données de l'API pour correspondre aux colonnes du tableau
+          // Vérifier le maximum d'ID
+          const maxId = Math.max(...data.map((exec) => exec.id));
+          console.log('ID maximal récupéré:', maxId);
+
           this.executions = data.map((execution) => {
-            console.log('Statut:', execution.statut); // Vérifier la valeur
+            console.log('Statut:', execution.statut);
+
+            // Conversion de la date en format "yyyy-MM-dd"
+            const formattedDate = execution.dateMiseAjour
+              ? new Date(execution.dateMiseAjour).toISOString().split('T')[0] // "yyyy-MM-dd"
+              : null;
+
             return {
               id: execution.id,
               campaignId: execution.nomDeCampagne,
-              updatedDate: execution.dateMiseAJour,
-              status: execution.statut, // Utiliser 'statut'
+              dateMiseAjour: formattedDate, // Utilise la date formatée ici
+              status: execution.statut,
               requestedBy: execution.demandePar,
-              result: execution.resultat, // Utiliser 'resultat'
+              result: execution.resultat,
             };
           });
 
-          // Mettre à jour la table paginée avec les données mappées
           this.updatePagedTableData();
-          console.log('table', this.pagedTableData);
         },
         error: (error) => {
           console.error(
             'Erreur lors de la récupération des exécutions:',
             error
           );
-
           this.showPopupMessage(
             'Erreur lors de la récupération des exécutions.',
             'error'
@@ -238,10 +329,6 @@ export class GestionExecComponent implements OnInit {
     this.totalPages = Math.ceil(this.executions.length / this.itemsPerPage);
   }
 
-  editExecution(execution: any): void {
-    console.log("Modification de l'exécution", execution);
-  }
-
   putOnHoldExecution(execution: any): void {
     console.log('Exécution mise en attente', execution);
     execution.status = 'En attente';
@@ -274,7 +361,7 @@ export class GestionExecComponent implements OnInit {
       this.executions = this.executions.filter(
         (execution) =>
           execution.campaignId.toLowerCase().includes(query) ||
-          execution.updatedDate.includes(query) ||
+          execution.dateMiseAjour.includes(query) ||
           execution.status.toLowerCase().includes(query) ||
           execution.requestedBy.toLowerCase().includes(query) ||
           execution.result.toLowerCase().includes(query)
@@ -306,5 +393,17 @@ export class GestionExecComponent implements OnInit {
           this.showPopupMessage("Erreur lors de l'exportation.", 'error');
         },
       });
+  }
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagedTableData();
+    }
+  }
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagedTableData();
+    }
   }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,22 +34,45 @@ public class ExecutionController {
         }
 
         if (executions.isEmpty()) {
-            return ResponseEntity.noContent().build(); 
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(executions);
     }
 
     @PostMapping
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<ExecutionEntity> addExecution(@RequestBody ExecutionEntity execution) {
+        // Vérifier si l'ID est fourni par Angular
+        if (execution.getId() != null) {
+            Optional<ExecutionEntity> existingExecution = executionService.getExecutionById(execution.getId());
+            if (existingExecution.isPresent()) {
+                return ResponseEntity.badRequest().body(null); // Empêcher l'ajout d'un ID existant
+            }
+        }
+
+
+
+        // Vérification du statut et résultat
+        if (execution.getStatut() == null) {
+            execution.setStatut("En cours");
+        }
+        if (execution.getResultat() == null) {
+            execution.setResultat("En attente");
+        }
+
+        // Sauvegarder l'exécution
         ExecutionEntity createdExecution = executionService.addExecution(execution);
         return ResponseEntity.ok(createdExecution);
     }
 
     @PutMapping("/{id}")
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<ExecutionEntity> updateExecution(@PathVariable String id, @RequestBody ExecutionEntity execution) {
-        Optional<ExecutionEntity> updatedExecution = executionService.updateExecution(id, execution);
-        return updatedExecution.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return executionService.updateExecution(id, execution).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteExecution(@PathVariable String id) {

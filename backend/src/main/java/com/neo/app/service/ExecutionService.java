@@ -15,7 +15,7 @@ public class ExecutionService {
     private ExecutionRepository executionRepository;
 
     public ExecutionEntity addExecution(ExecutionEntity execution) {
-        execution.setDateMiseAJour(LocalDate.now());
+       // execution.setDateMiseAJour(LocalDate.now());
         return executionRepository.save(execution);
     }
 
@@ -38,7 +38,9 @@ public class ExecutionService {
     public List<ExecutionEntity> getAllExecutions() {
         return executionRepository.findAll();
     }
-
+    public Optional<ExecutionEntity> getExecutionById(String id) {
+        return executionRepository.findById(id);
+    }
     public List<ExecutionEntity> getExecutionsByUserId(String userId) {
         return executionRepository.findByUserId(userId);
     }
@@ -60,4 +62,7 @@ public class ExecutionService {
 
         return csvBuilder.toString().getBytes();
     }
+
+
+ 
 }
