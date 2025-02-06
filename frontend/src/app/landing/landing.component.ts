@@ -16,6 +16,10 @@ export class LandingComponent implements OnInit {
   error: string = ''; // Message d'erreur
   isNavbarVisible: boolean = true;
 
+  subMenus: { [key: string]: boolean } = {
+    administration: false, // Sous-menu pour Administration
+  };
+
   constructor(
     private keycloakService: KeycloakService,
     private contextService: ContextService,
@@ -54,7 +58,15 @@ export class LandingComponent implements OnInit {
       '/g-dexecution',
       '/gestionnaire-de-doc',
       '/administration',
+      '/gestion-licences',
+      '/gestion-utilisateur',
+      '/audit-suivi',
     ];
     return navbarRoutes.includes(this.router.url) && !this.isCollapsed;
+  }
+
+  // Basculer l'affichage du sous-menu (Administration)
+  toggleSubMenu(menu: string) {
+    this.subMenus[menu] = !this.subMenus[menu];
   }
 }

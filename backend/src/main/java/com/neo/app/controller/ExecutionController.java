@@ -50,9 +50,6 @@ public class ExecutionController {
             }
         }
 
-
-
-        // Vérification du statut et résultat
         if (execution.getStatut() == null) {
             execution.setStatut("En cours");
         }
@@ -60,7 +57,6 @@ public class ExecutionController {
             execution.setResultat("En attente");
         }
 
-        // Sauvegarder l'exécution
         ExecutionEntity createdExecution = executionService.addExecution(execution);
         return ResponseEntity.ok(createdExecution);
     }
@@ -75,6 +71,7 @@ public class ExecutionController {
 
 
     @DeleteMapping("/{id}")
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<Void> deleteExecution(@PathVariable String id) {
         if (executionService.deleteExecution(id)) {
             return ResponseEntity.noContent().build();

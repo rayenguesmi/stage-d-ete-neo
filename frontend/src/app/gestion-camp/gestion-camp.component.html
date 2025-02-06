@@ -1,7 +1,5 @@
 <div class="container">
-  <h1 class="title">
-    <i class="fas fa-folder-open"></i> Gestionnaire de Campagnes
-  </h1>
+  <h1 class="title"><i class="fa fa-tasks"></i> Gestionnaire de Campagnes</h1>
 
   <!-- Barre supérieure : boutons + recherche -->
   <div class="top-bar">
@@ -46,6 +44,12 @@
           </button>
         </th>
         <th>
+          Projet
+          <button class="sort-btn" (click)="sortByColumn('projet')">
+            &#x21C5;
+          </button>
+        </th>
+        <th>
           Nb de Rapports
           <button class="sort-btn" (click)="sortByColumn('nbRapports')">
             &#x21C5;
@@ -66,6 +70,7 @@
         <td>{{ item.id }}</td>
         <td>{{ item.titre }}</td>
         <td>{{ item.version }}</td>
+        <td>{{ item.projet }}</td>
         <td>{{ item.nbRapports }}</td>
         <td>{{ item.date }}</td>
         <td>{{ item.nbExecution }}</td>
@@ -126,62 +131,6 @@
         Confirmer
       </button>
       <button class="cancel-btn" (click)="closeConfirmation()">Annuler</button>
-    </div>
-  </div>
-
-  <!-- Popup de modification -->
-  <div *ngIf="showEditModal || showAddModal" class="modal">
-    <div class="modal-content">
-      <!-- Bouton pour fermer la modal -->
-      <button class="close-btn" (click)="closeModal()">&#x2715;</button>
-      <h2>{{ isEditMode ? "Modifier" : "Ajouter" }} un campagne</h2>
-      <form (submit)="submitEditForm()">
-        <label>Titre :</label>
-        <input
-          [(ngModel)]="editData.titre"
-          name="titre"
-          pattern="[A-Za-z0-9 ]+"
-          required
-          placeholder="Camp X"
-        />
-
-        <label>Version :</label>
-        <input
-          [(ngModel)]="editData.version"
-          name="version"
-          pattern="\d+(\.\d+)+"
-          required
-          placeholder="1.0 ou 1.0.1"
-        />
-
-        <label>Nb de Rapports :</label>
-        <input
-          [(ngModel)]="editData.nbRapports"
-          name="nbRapports"
-          type="number"
-          min="0"
-          required
-          placeholder="Entier positif"
-        />
-
-        <label>Date :</label>
-        <input [(ngModel)]="editData.date" name="date" type="date" required />
-
-        <label>Nb d'Exécution :</label>
-        <input
-          [(ngModel)]="editData.nbExecution"
-          name="nbExecution"
-          type="number"
-          min="0"
-          required
-          placeholder="Entier positif"
-        />
-
-        <button type="submit">
-          {{ isEditMode ? "Enregistrer" : "Ajouter" }}
-        </button>
-        <button type="button" (click)="closeModal()">Annuler</button>
-      </form>
     </div>
   </div>
 
@@ -248,6 +197,64 @@
       </div>
     </div>
   </div>
+  <!-- Popup de modification -->
+  <div *ngIf="showEditModal || showAddModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+      <h2>{{ isEditMode ? "Modifier" : "Ajouter" }} une campagne</h2>
+      <form (submit)="submitEditForm()">
+        <label>Titre :</label>
+        <input
+          [(ngModel)]="editData.titre"
+          name="titre"
+          required
+          placeholder="Camp X"
+        />
+
+        <label>Version :</label>
+        <input
+          [(ngModel)]="editData.version"
+          name="version"
+          required
+          placeholder="1.0 ou 1.0.1"
+        />
+
+        <label>Projet :</label>
+        <input
+          [(ngModel)]="editData.projet"
+          name="projet"
+          required
+          placeholder="Nom du projet"
+        />
+
+        <label>Nb de Rapports :</label>
+        <input
+          [(ngModel)]="editData.nbRapports"
+          name="nbRapports"
+          type="number"
+          min="0"
+          required
+        />
+
+        <label>Date :</label>
+        <input [(ngModel)]="editData.date" name="date" type="date" required />
+
+        <label>Nb d'Exécution :</label>
+        <input
+          [(ngModel)]="editData.nbExecution"
+          name="nbExecution"
+          type="number"
+          min="0"
+          required
+        />
+
+        <button type="submit">
+          {{ isEditMode ? "Enregistrer" : "Ajouter" }}
+        </button>
+        <button type="button" (click)="closeModal()">Annuler</button>
+      </form>
+    </div>
+  </div>
 
   <!-- Popup Détails -->
   <div *ngIf="showDetailsModal" class="modal">
@@ -256,12 +263,13 @@
       <h2>Détails de la campagne</h2>
 
       <div class="details-section">
-        <!-- Première partie : Infos de la campagne -->
+        <!-- Informations de la campagne -->
         <div class="campaign-info">
           <h3>Informations de la campagne</h3>
           <p><strong>ID :</strong> {{ selectedCampaign?.id }}</p>
           <p><strong>Titre :</strong> {{ selectedCampaign?.titre }}</p>
           <p><strong>Version :</strong> {{ selectedCampaign?.version }}</p>
+          <p><strong>Projet :</strong> {{ selectedCampaign?.projet }}</p>
           <p>
             <strong>Nb de Rapports :</strong> {{ selectedCampaign?.nbRapports }}
           </p>
@@ -274,14 +282,12 @@
             <strong>Dernière exécution :</strong>
             {{ selectedCampaign?.lastExecution }}
           </p>
-          <!-- Icône de modification -->
           <i
             class="fas fa-edit edit-icon"
             (click)="openModal(selectedCampaign)"
             title="Modifier Infos"
           ></i>
         </div>
-
         <!-- Deuxième partie : Affectation de documents -->
         <div class="doc-assignment">
           <h3>Affectation de documents</h3>

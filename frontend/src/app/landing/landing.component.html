@@ -22,7 +22,7 @@
   <!-- Navbar -->
   <div class="navbar-container" [class.collapsed]="isCollapsed">
     <!-- Menu -->
-    <div *ngIf="!isCollapsed">
+    <div *ngIf="shouldShowNavbar()">
       <!-- Logo -->
       <div class="logo-container">
         <img src="assets/Logo_Neo_TM.PNG" alt="Logo Neo-TM" class="logo" />
@@ -54,10 +54,30 @@
               <i class="fa fa-calendar-check"></i> Gestionnaire d'exécutions
             </a>
           </li>
-          <li>
-            <a routerLink="/administration" routerLinkActive="active">
+          <li class="submenu">
+            <a
+              routerLink="javascript:void(0)"
+              (click)="toggleSubMenu('administration')"
+            >
               <i class="fa fa-user-cog"></i> Administration
             </a>
+            <ul *ngIf="subMenus['administration']" class="submenu-list">
+              <li>
+                <a routerLink="/gestion-utilisateur" routerLinkActive="active"
+                  ><i class="fa fa-users"></i> Gestion des utilisateurs</a
+                >
+              </li>
+              <li>
+                <a routerLink="/gestion-licences" routerLinkActive="active"
+                  ><i class="fa fa-cogs"></i> Gestion des licences</a
+                >
+              </li>
+              <li>
+                <a routerLink="/audit-suivi" routerLinkActive="active"
+                  ><i class="fas fa-clipboard-check"></i> Audit et suivi</a
+                >
+              </li>
+            </ul>
           </li>
         </ul>
       </nav>

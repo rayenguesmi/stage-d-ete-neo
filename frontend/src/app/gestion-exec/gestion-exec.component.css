@@ -132,7 +132,16 @@ table th {
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 }
-
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 8px;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
 .modal-content h2 {
   margin-bottom: 20px;
   font-size: 1.5rem;
@@ -388,4 +397,62 @@ h2 {
 
 .close-btn:hover {
   color: red;
+}
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 255, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.confirmation-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.confirmation-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
+}
+
+.confirmation-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.confirm-btn {
+  background-color: #5e17eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #ccc;
+  color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirm-btn:hover {
+  background-color: #4a0fb8;
+}
+
+.cancel-btn:hover {
+  background-color: #aaa;
 }

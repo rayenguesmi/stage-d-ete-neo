@@ -131,6 +131,16 @@
       </tr>
     </tbody>
   </table>
+  <!-- Ajout du popup de confirmation -->
+  <div *ngIf="confirmationVisible" class="confirmation-modal">
+    <div class="modal-content">
+      <p>{{ confirmationMessage }}</p>
+      <button class="confirm-btn" (click)="proceedWithConfirmation()">
+        Confirmer
+      </button>
+      <button class="cancel-btn" (click)="closeConfirmation()">Annuler</button>
+    </div>
+  </div>
   <!-- Pagination sous le tableau -->
   <div class="pagination-container">
     <button
@@ -149,8 +159,11 @@
       →
     </button>
   </div>
+  <!-- Notifications -->
+  <div class="popup" *ngIf="showPopup">
+    <span>{{ popupMessage }}</span>
+  </div>
 
-  <!-- Modal pour ajouter/éditer une exécution -->
   <!-- Modal pour ajouter/éditer une exécution -->
   <div *ngIf="showAddExecModal" class="modal">
     <div class="modal-content">

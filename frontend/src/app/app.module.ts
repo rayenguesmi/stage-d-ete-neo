@@ -13,6 +13,9 @@ import { GestionDocComponent } from './gestion-doc/gestion-doc.component';
 import { GestionExecComponent } from './gestion-exec/gestion-exec.component';
 import { HomeComponent } from './home/home.component';
 import { LandingComponent } from './landing/landing.component';
+import { GestionUtilisateurComponent } from './gestion-utilisateur/gestion-utilisateur.component';
+import { GestionLicencesComponent } from './gestion-licences/gestion-licences.component';
+import { AuditSuiviComponent } from './audit-suivi/audit-suivi.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +26,9 @@ import { LandingComponent } from './landing/landing.component';
     GestionDocComponent,
     GestionExecComponent,
     HomeComponent,
+    GestionUtilisateurComponent,
+    GestionLicencesComponent,
+    AuditSuiviComponent,
   ],
   imports: [BrowserModule, HttpClientModule, AppRoutingModule, FormsModule],
   providers: [

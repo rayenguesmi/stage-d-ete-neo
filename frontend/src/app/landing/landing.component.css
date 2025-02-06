@@ -163,3 +163,39 @@
     margin-left: 50px; /* Ajuste la marge sur petits écrans */
   }
 }
+/* Style pour les sous-menus */
+.submenu-list {
+  list-style: none;
+  padding-left: 20px;
+  display: none;
+}
+
+.submenu-list li {
+  padding: 1px 0;
+}
+
+.submenu a {
+  cursor: pointer;
+}
+
+.submenu a .fa-chevron-down {
+  margin-left: auto;
+}
+
+.submenu-list {
+  display: block;
+}
+
+/* Lorsque le sous-menu est affiché */
+.submenu-list li a {
+  padding-left: 30px;
+}
+
+.submenu-list li a:hover {
+  background-color: #f0f0f0;
+}
+
+/* Lorsque le sous-menu est activé (visible) */
+.submenu.open .submenu-list {
+  display: block;
+}
