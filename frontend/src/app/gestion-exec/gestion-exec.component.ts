@@ -93,29 +93,36 @@ export class GestionExecComponent implements OnInit {
     this.showAddExecModal = true;
     this.isEditModeExec = true;
 
-    // Mettre à jour la campagne sélectionnée avec l'ID de la campagne dans l'exécution
+    // Trouver la campagne correspondante à partir de `item.nomDeCampagne`
     const selectedCampaign = this.campaigns.find(
-      (campaign) => campaign.nomDeCampagne === item.nomDeCampagne
+      (campaign) => campaign.nomDeCampagne === item.campaignId
     );
 
     if (selectedCampaign) {
-      this.selectedCampaignName = selectedCampaign.id.toString(); // Assurez-vous de l'ID de la campagne
+      this.selectedCampaignName = selectedCampaign.id.toString();
+    } else {
+      console.warn(' Campagne non trouvée pour :', item.nomDeCampagne);
+      this.selectedCampaignName = ''; // Réinitialiser si non trouvée
     }
 
-    // Remplir les autres champs du formulaire avec les données de l'exécution
+    // Remplir les autres champs du formulaire
     this.editExecData = {
       ...item,
-      dateMiseAjour: item.dateMiseAjour, // Si pas de date, utilise la date actuelle
+      dateMiseAjour:
+        item.dateMiseAjour || new Date().toISOString().split('T')[0],
     };
   }
 
   submitExecForm(): void {
-    console.log("Nom de l'utilisateur connecté:", this.userName);
+    console.log(' Soumission du formulaire...');
 
-    // Vérifie si on est en mode édition
     if (this.isEditModeExec) {
-      const updatedExecItem = { ...this.editExecData };
-      console.log('id de camp à modifier', updatedExecItem.id);
+      const updatedExecItem = {
+        ...this.editExecData,
+        campaignId: this.selectedCampaignName, // Associer correctement l'ID de la campagne
+      };
+
+      console.log('Données envoyées pour modification :', updatedExecItem);
 
       this.http
         .put(
@@ -124,12 +131,12 @@ export class GestionExecComponent implements OnInit {
         )
         .subscribe({
           next: () => {
-            console.log('Exécution modifiée avec succès.');
+            console.log(' Exécution modifiée avec succès.');
             this.showPopupMessage('Exécution modifiée avec succès.', 'success');
             this.getExecutions(); // Rafraîchir les exécutions après modification
           },
           error: (error) => {
-            console.error('Erreur lors de la modification:', error);
+            console.error(' Erreur lors de la modification:', error);
             this.showPopupMessage(
               "Erreur lors de la modification de l'exécution.",
               'error'
@@ -267,11 +274,8 @@ export class GestionExecComponent implements OnInit {
 
           // Vérifier le maximum d'ID
           const maxId = Math.max(...data.map((exec) => exec.id));
-          console.log('ID maximal récupéré:', maxId);
 
           this.executions = data.map((execution) => {
-            console.log('Statut:', execution.statut);
-
             // Conversion de la date en format "yyyy-MM-dd"
             const formattedDate = execution.dateMiseAjour
               ? new Date(execution.dateMiseAjour).toISOString().split('T')[0] // "yyyy-MM-dd"
