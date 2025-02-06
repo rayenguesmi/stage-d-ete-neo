@@ -17,6 +17,9 @@ export class GestionExecComponent implements OnInit {
     status: 'En cours',
     result: 'En attente',
   };
+  confirmationVisible: boolean = false;
+  confirmationMessage: string = '';
+  confirmationAction: () => void = () => {};
   pagedTableData: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 8;
@@ -116,7 +119,8 @@ export class GestionExecComponent implements OnInit {
   submitExecForm(): void {
     console.log('Soumission du formulaire...');
 
-    console.log('editt', this.editExecData);
+    console.log('editExecData', this.editExecData);
+
     // Sélection de la campagne associée à l'exécution
     const selectedCampaign = this.campaigns.find(
       (campaign) =>
@@ -131,8 +135,8 @@ export class GestionExecComponent implements OnInit {
     if (this.isEditModeExec) {
       const updatedExecItem = {
         ...this.editExecData,
-        nomDeCampagne: selectedCampaign.nomDeCampagne,
-        // Associer correctement l'ID de la campagne
+        campaignId: selectedCampaign.id, // Utilise campaignId pour l'envoi
+        nomDeCampagne: selectedCampaign.nomDeCampagne, // Utilise nomDeCampagne pour l'affichage
       };
 
       console.log('Données envoyées pour modification :', updatedExecItem);
@@ -352,11 +356,56 @@ export class GestionExecComponent implements OnInit {
 
   deleteExecution(execution: any): void {
     const index = this.executions.findIndex((e) => e.id === execution.id);
+
     if (index !== -1) {
+      // Supprimer l'exécution localement
       this.executions.splice(index, 1);
+      this.confirmAction('Voulez-vous vraiment supprimer cet élément ?', () => {
+        // Supprimer l'exécution côté serveur
+        this.http
+          .delete(`http://localhost:8090/api/executions/${execution.id}`)
+          .subscribe({
+            next: () => {
+              console.log(`Exécution ${execution.id} supprimée avec succès.`);
+              this.showPopupMessage(
+                'Exécution supprimée avec succès.',
+                'success'
+              );
+            },
+            error: (error) => {
+              console.error('Erreur lors de la suppression:', error);
+              this.showPopupMessage(
+                "Erreur lors de la suppression de l'exécution.",
+                'error'
+              );
+
+              // Si erreur de suppression côté serveur, on réajoute l'exécution à la liste locale
+              this.executions.splice(index, 0, execution);
+            },
+          });
+      });
+      this.getExecutions();
     }
+
+  }
+  closeConfirmation(): void {
+    this.confirmationVisible = false;
+    this.confirmationMessage = '';
+    this.confirmationAction = () => {};
+  }
+  // Méthode générique de confirmation qui montre le message et exécute l'action
+  confirmAction(message: string, action: () => void): void {
+    this.confirmationMessage = message;
+    this.confirmationAction = action;
+    this.confirmationVisible = true; // Afficher la popup de confirmation
   }
 
+  proceedWithConfirmation(): void {
+    if (this.confirmationAction) {
+      this.confirmationAction(); // Exécuter l'action (par exemple, duplication, suppression)
+    }
+    this.closeConfirmation(); // Fermer la popup après avoir confirmé l'action
+  }
   reloadPage(): void {
     this.showPopupMessage('La page a été rechargée', 'info');
     window.location.reload();
