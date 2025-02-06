@@ -10,7 +10,7 @@ export class GestionExecComponent implements OnInit {
   executions: any[] = [];
 
   editExecData: any = {
-    campaignId: '',
+    nomDeCampagne: '',
     dateMiseAjour: '',
     requestedBy: '',
 
@@ -114,12 +114,25 @@ export class GestionExecComponent implements OnInit {
   }
 
   submitExecForm(): void {
-    console.log(' Soumission du formulaire...');
+    console.log('Soumission du formulaire...');
+
+    console.log('editt', this.editExecData);
+    // Sélection de la campagne associée à l'exécution
+    const selectedCampaign = this.campaigns.find(
+      (campaign) =>
+        campaign.id.toString() === this.selectedCampaignName.toString()
+    );
+
+    if (!selectedCampaign) {
+      this.showPopupMessage('Campagne sélectionnée invalide.', 'error');
+      return;
+    }
 
     if (this.isEditModeExec) {
       const updatedExecItem = {
         ...this.editExecData,
-        campaignId: this.selectedCampaignName, // Associer correctement l'ID de la campagne
+        nomDeCampagne: selectedCampaign.nomDeCampagne,
+        // Associer correctement l'ID de la campagne
       };
 
       console.log('Données envoyées pour modification :', updatedExecItem);
@@ -131,12 +144,12 @@ export class GestionExecComponent implements OnInit {
         )
         .subscribe({
           next: () => {
-            console.log(' Exécution modifiée avec succès.');
+            console.log('Exécution modifiée avec succès.');
             this.showPopupMessage('Exécution modifiée avec succès.', 'success');
             this.getExecutions(); // Rafraîchir les exécutions après modification
           },
           error: (error) => {
-            console.error(' Erreur lors de la modification:', error);
+            console.error('Erreur lors de la modification:', error);
             this.showPopupMessage(
               "Erreur lors de la modification de l'exécution.",
               'error'
@@ -168,7 +181,6 @@ export class GestionExecComponent implements OnInit {
         return;
       }
 
-      console.log('Date 1:', this.editExecData.dateMiseAjour);
       const newExecItem = {
         id: this.generateNewId().toString(),
         nomDeCampagne: selectedCampaign.nomDeCampagne,
