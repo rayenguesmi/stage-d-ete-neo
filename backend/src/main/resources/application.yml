@@ -35,7 +35,7 @@ spring:
         registration:
           backend:
             client-id: Neo_TM_Backend
-            client-secret: PjhDYxdsJ9c1WSwqG2yEphNyDSKEpepl
+            client-secret: Qmgpn9kcgCM6ywSTPFsoTsvsGQkhI5G0
             provider: keycloak
             scope: openid, profile, email
             authorization-grant-type: client_credentials
