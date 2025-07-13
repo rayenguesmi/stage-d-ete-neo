@@ -7,4 +7,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'frontend';
+  currentView = 'users'; // Vue par défaut
+
+  setCurrentView(view: string): void {
+    this.currentView = view;
+  }
 }

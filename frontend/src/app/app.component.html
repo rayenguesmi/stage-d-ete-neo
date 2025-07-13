@@ -1,2 +1,31 @@
-<router-outlet></router-outlet>
+<div class="app-container">
+  <h1>Neo.TM - Système de Gestion</h1>
+  
+  <div class="navigation">
+    <button 
+      class="nav-btn" 
+      [class.active]="currentView === 'users'"
+      (click)="setCurrentView('users')">
+      Gestion des Utilisateurs
+    </button>
+    <button 
+      class="nav-btn" 
+      [class.active]="currentView === 'roles'"
+      (click)="setCurrentView('roles')">
+      Gestion des Rôles
+    </button>
+    <button 
+      class="nav-btn" 
+      [class.active]="currentView === 'licenses'"
+      (click)="setCurrentView('licenses')">
+      Gestion des Licences
+    </button>
+  </div>
+
+  <div class="content">
+    <app-gestion-utilisateur *ngIf="currentView === 'users'"></app-gestion-utilisateur>
+    <app-gestion-roles *ngIf="currentView === 'roles'"></app-gestion-roles>
+    <app-gestion-licences *ngIf="currentView === 'licenses'"></app-gestion-licences>
+  </div>
+</div>
 

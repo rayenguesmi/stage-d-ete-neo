@@ -1,544 +1,366 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion des Licences</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <style>
-    /* Reset et styles de base */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #f5f7fa;
-    }
+<div class="gestion-licences-container">
+  <h2>Gestion des Licences</h2>
 
-    /* Structure principale */
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-    }
+  <!-- Message d'alerte -->
+  <div *ngIf="message" class="alert" [ngClass]="'alert-' + messageType">
+    {{ message }}
+  </div>
 
-    /* Sidebar existante - NE PAS MODIFIER */
-    .sidebar {
-      width: 250px;
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px 0;
-      position: fixed;
-      height: 100vh;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-      z-index: 100;
-    }
+  <!-- Statistiques -->
+  <div *ngIf="statistics" class="statistics-section">
+    <h3>Statistiques</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ statistics.totalLicenses }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ statistics.activeLicenses }}</div>
+        <div class="stat-label">Actives</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ statistics.inactiveLicenses }}</div>
+        <div class="stat-label">Inactives</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ statistics.trialLicenses }}</div>
+        <div class="stat-label">Essais</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ statistics.expiredLicenses }}</div>
+        <div class="stat-label">Expirées</div>
+      </div>
+    </div>
+  </div>
 
-    /* Contenu principal */
-    .main-content {
-      flex: 1;
-      margin-left: 250px; /* Doit correspondre à la largeur de la sidebar */
-      padding: 24px;
-      display: flex;
-      justify-content: center;
-    }
+  <!-- Barre d'actions -->
+  <div class="actions-bar">
+    <button class="btn btn-primary" (click)="showCreateForm()">
+      Nouvelle Licence
+    </button>
+    <button class="btn btn-secondary" (click)="showValidationDialog()">
+      Valider une Licence
+    </button>
+    <button class="btn btn-info" (click)="loadLicenses()">
+      Actualiser
+    </button>
+  </div>
 
-    .licenses-container {
-      width: 100%;
-      max-width: 1400px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding: 24px;
-    }
+  <!-- Filtres et recherche -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="search">Recherche :</label>
+      <input 
+        type="text" 
+        id="search"
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+        placeholder="Nom, client, organisation, clé..."
+        class="form-control">
+    </div>
+    
+    <div class="filter-group">
+      <label for="filterType">Type :</label>
+      <select 
+        id="filterType"
+        [(ngModel)]="filterType" 
+        (change)="onFilterChange()"
+        class="form-control">
+        <option value="ALL">Tous</option>
+        <option value="STANDARD">Standard</option>
+        <option value="PREMIUM">Premium</option>
+        <option value="ENTERPRISE">Enterprise</option>
+        <option value="TRIAL">Essai</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="filterStatus">Statut :</label>
+      <select 
+        id="filterStatus"
+        [(ngModel)]="filterStatus" 
+        (change)="onFilterChange()"
+        class="form-control">
+        <option value="ALL">Tous</option>
+        <option value="ACTIVE">Actives</option>
+        <option value="INACTIVE">Inactives</option>
+        <option value="EXPIRED">Expirées</option>
+        <option value="TRIAL">Essais</option>
+      </select>
+    </div>
+  </div>
 
-    /* Styles existants conservés */
-    .header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 2.5rem;
-      font-weight: 300;
-      margin: 0;
-      color: #333;
-    }
-
-    .subtitle {
-      font-size: 1.1rem;
-      color: #666;
-      margin: 8px 0 0 0;
-    }
-
-    .stats-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .stat-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .stat-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 20px;
-    }
-
-    .stat-info {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-
-    .stat-label {
-      font-size: 0.9rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 16px;
-      background: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    .toolbar-left {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .toolbar-right {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .search-field {
-      min-width: 250px;
-    }
-
-    .filter-field {
-      min-width: 150px;
-    }
-
-    .table-container {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .licenses-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .licenses-table th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-      color: #2c3e50;
-      padding: 16px 8px;
-      text-align: left;
-    }
-
-    .licenses-table td {
-      padding: 12px 8px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .license-key {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .license-key strong {
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      color: #3498db;
-    }
-
-    .users-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 80px;
-    }
-
-    .progress-bar {
-      height: 4px;
-      background-color: #eee;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background-color: #3498db;
-    }
-
-    .expiry-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .days-remaining {
-      color: #666;
-      font-size: 0.8rem;
-    }
-
-    .mat-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 0 12px;
-      height: 24px;
-      font-size: 0.8rem;
-      border-radius: 12px;
-      background-color: #eee;
-    }
-
-    .mat-chip.primary {
-      background-color: #3498db;
-      color: white;
-    }
-
-    .mat-chip.warn {
-      background-color: #e74c3c;
-      color: white;
-    }
-
-    .mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-
-    .material-icons {
-      vertical-align: middle;
-    }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
+  <!-- Liste des licences -->
+  <div class="licences-list">
+    <div *ngIf="filteredLicenses.length === 0" class="no-data">
+      Aucune licence trouvée.
+    </div>
+    
+    <div *ngFor="let license of filteredLicenses" class="licence-card">
+      <div class="licence-header">
+        <h4>{{ license.licenseName }}</h4>
+        <span class="licence-status" [ngClass]="getStatusClass(license)">
+          {{ getStatusText(license) }}
+        </span>
+      </div>
       
-      .toolbar-left,
-      .toolbar-right {
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 992px) {
-      .sidebar {
-        width: 200px;
-      }
-      
-      .main-content {
-        margin-left: 200px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 80px;
-        padding: 10px 0;
-      }
-      
-      .main-content {
-        margin-left: 80px;
-      }
-      
-      .licenses-container {
-        padding: 16px;
-      }
-      
-      .stats-cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .toolbar-right {
-        flex-direction: column;
-        width: 100%;
-      }
-      
-      .search-field,
-      .filter-field {
-        width: 100%;
-        min-width: unset;
-      }
-      
-      .title {
-        font-size: 2rem;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .stats-cards {
-        grid-template-columns: 1fr;
-      }
-      
-      .toolbar-left {
-        flex-direction: column;
-        width: 100%;
-      }
-      
-      .toolbar-left button {
-        width: 100%;
-      }
-      
-      .title {
-        font-size: 1.8rem;
-      }
-      
-      .sidebar {
-        display: none;
-      }
-      
-      .main-content {
-        margin-left: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="app-container">
-    <!-- Sidebar existante - non modifiée -->
-   
-
-    <!-- Contenu principal -->
-    <div class="main-content">
-      <div class="licenses-container">
-        <!-- En-tête -->
-        <div class="header">
-          <h1 class="title">
-            <span class="material-icons">card_membership</span>
-            Gestion des Licences
-          </h1>
-          <p class="subtitle">Gérer les licences clients et suivre les expirations</p>
+      <div class="licence-details">
+        <div class="detail-row">
+          <span class="label">Clé :</span>
+          <span class="value">{{ license.licenseKey }}</span>
         </div>
-
-        <!-- Statistiques rapides -->
-        <div class="stats-cards">
-          <div class="stat-card">
-            <div class="stat-content">
-              <span class="material-icons" style="color: #3498db;">assignment</span>
-              <div class="stat-info">
-                <span class="stat-number">125</span>
-                <span class="stat-label">Total</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <span class="material-icons" style="color: #3498db;">check_circle</span>
-              <div class="stat-info">
-                <span class="stat-number">98</span>
-                <span class="stat-label">Actives</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <span class="material-icons" style="color: #e74c3c;">warning</span>
-              <div class="stat-info">
-                <span class="stat-number">15</span>
-                <span class="stat-label">Expirent Bientôt</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <span class="material-icons" style="color: #e74c3c;">cancel</span>
-              <div class="stat-info">
-                <span class="stat-number">12</span>
-                <span class="stat-label">Expirées</span>
-              </div>
-            </div>
-          </div>
+        <div class="detail-row">
+          <span class="label">Type :</span>
+          <span class="value">{{ license.licenseType }}</span>
         </div>
+        <div class="detail-row">
+          <span class="label">Client :</span>
+          <span class="value">{{ license.customerName }}</span>
+        </div>
+        <div class="detail-row" *ngIf="license.organization">
+          <span class="label">Organisation :</span>
+          <span class="value">{{ license.organization }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Email :</span>
+          <span class="value">{{ license.customerEmail }}</span>
+        </div>
+        <div class="detail-row" *ngIf="license.maxUsers">
+          <span class="label">Max Utilisateurs :</span>
+          <span class="value">{{ license.maxUsers }}</span>
+        </div>
+        <div class="detail-row" *ngIf="license.maxProjects">
+          <span class="label">Max Projets :</span>
+          <span class="value">{{ license.maxProjects }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Expiration :</span>
+          <span class="value" [ngClass]="getDaysUntilExpiryClass(license.daysUntilExpiry)">
+            {{ formatDate(license.expiryDate) }}
+            <span *ngIf="license.daysUntilExpiry !== undefined">
+              ({{ license.daysUntilExpiry }} jours)
+            </span>
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="license.features && license.features.length > 0">
+          <span class="label">Fonctionnalités :</span>
+          <span class="value">
+            <span *ngFor="let feature of license.features; let last = last" class="feature-tag">
+              {{ feature }}<span *ngIf="!last">, </span>
+            </span>
+          </span>
+        </div>
+      </div>
+      
+      <div class="licence-actions">
+        <button class="btn btn-sm btn-primary" (click)="showEditForm(license)">
+          Modifier
+        </button>
+        <button 
+          class="btn btn-sm" 
+          [ngClass]="license.isActive ? 'btn-warning' : 'btn-success'"
+          (click)="toggleLicenseStatus(license)">
+          {{ license.isActive ? 'Désactiver' : 'Activer' }}
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="deleteLicense(license)">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <!-- Barre d'outils -->
-        <div class="toolbar">
-          <div class="toolbar-left">
-            <button style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
-              <span class="material-icons">add</span>
-              Nouvelle Licence
-            </button>
+  <!-- Formulaire de création/modification -->
+  <div *ngIf="showForm" class="modal-overlay" (click)="hideForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingLicense ? 'Modifier' : 'Créer' }} une Licence</h3>
+        <button class="btn-close" (click)="hideForm()">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <form (ngSubmit)="saveLicense()">
+          <div class="form-group">
+            <label for="licenseName">Nom de la licence *</label>
+            <input 
+              type="text" 
+              id="licenseName"
+              [(ngModel)]="newLicense.licenseName" 
+              name="licenseName"
+              required
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="licenseType">Type de licence *</label>
+            <select 
+              id="licenseType"
+              [(ngModel)]="newLicense.licenseType" 
+              name="licenseType"
+              required
+              class="form-control">
+              <option *ngFor="let type of licenseTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="customerName">Nom du client *</label>
+            <input 
+              type="text" 
+              id="customerName"
+              [(ngModel)]="newLicense.customerName" 
+              name="customerName"
+              required
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="customerEmail">Email du client *</label>
+            <input 
+              type="email" 
+              id="customerEmail"
+              [(ngModel)]="newLicense.customerEmail" 
+              name="customerEmail"
+              required
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="organization">Organisation</label>
+            <input 
+              type="text" 
+              id="organization"
+              [(ngModel)]="newLicense.organization" 
+              name="organization"
+              class="form-control">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="maxUsers">Max Utilisateurs</label>
+              <input 
+                type="number" 
+                id="maxUsers"
+                [(ngModel)]="newLicense.maxUsers" 
+                name="maxUsers"
+                min="1"
+                class="form-control">
+            </div>
             
-            <button style="background: none; border: none; color: #3498db; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
-              <span class="material-icons">notifications</span>
-              Vérifier Alertes
+            <div class="form-group">
+              <label for="maxProjects">Max Projets</label>
+              <input 
+                type="number" 
+                id="maxProjects"
+                [(ngModel)]="newLicense.maxProjects" 
+                name="maxProjects"
+                min="1"
+                class="form-control">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="expiryDate">Date d'expiration</label>
+            <input 
+              type="date" 
+              id="expiryDate"
+              [(ngModel)]="newLicense.expiryDate" 
+              name="expiryDate"
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Fonctionnalités</label>
+            <div class="features-grid">
+              <div *ngFor="let feature of availableFeatures" class="feature-checkbox">
+                <input 
+                  type="checkbox" 
+                  [id]="'feature-' + feature"
+                  [checked]="isFeatureSelected(feature)"
+                  (change)="toggleFeature(feature)">
+                <label [for]="'feature-' + feature">{{ feature }}</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea 
+              id="notes"
+              [(ngModel)]="newLicense.notes" 
+              name="notes"
+              rows="3"
+              class="form-control"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+              {{ editingLicense ? 'Mettre à jour' : 'Créer' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="hideForm()">
+              Annuler
             </button>
           </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-          <div class="toolbar-right">
-            <!-- Recherche -->
-            <div class="search-field" style="position: relative;">
-              <input type="text" placeholder="Rechercher" style="padding: 8px 32px 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-              <span class="material-icons" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #666;">search</span>
-            </div>
-
-            <!-- Filtre par statut -->
-            <div class="filter-field">
-              <select style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                <option value="">Tous</option>
-                <option value="ACTIVE">Actives</option>
-                <option value="EXPIRED">Expirées</option>
-              </select>
-            </div>
-
-            <!-- Filtre par type -->
-            <div class="filter-field">
-              <select style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                <option value="">Tous</option>
-                <option value="STANDARD">Standard</option>
-                <option value="ENTERPRISE">Enterprise</option>
-              </select>
-            </div>
-
-            <button style="background: none; border: none; color: #666; padding: 8px; display: flex; align-items: center; gap: 4px;">
-              <span class="material-icons">clear</span>
-              Effacer
-            </button>
-          </div>
+  <!-- Dialogue de validation -->
+  <div *ngIf="showValidationForm" class="modal-overlay" (click)="hideValidationDialog()">
+    <div class="modal-content validation-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Validation de Licence</h3>
+        <button class="btn-close" (click)="hideValidationDialog()">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="validationKey">Clé de licence</label>
+          <input 
+            type="text" 
+            id="validationKey"
+            [(ngModel)]="validationKey" 
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            class="form-control">
         </div>
-
-        <!-- Tableau des licences -->
-        <div class="table-container">
-          <table class="licenses-table">
-            <thead>
-              <tr>
-                <th>Clé de Licence</th>
-                <th>Client</th>
-                <th>Type</th>
-                <th>Statut</th>
-                <th>Utilisateurs</th>
-                <th>Max</th>
-                <th>Expiration</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="license-key">
-                    <strong>LIC-12345678</strong>
-                    <span class="material-icons" style="color: #e74c3c;" title="Licence expirée">error</span>
-                  </div>
-                </td>
-                <td>Entreprise ABC</td>
-                <td><span class="mat-chip primary">Enterprise</span></td>
-                <td><span class="mat-chip warn">Expirée</span></td>
-                <td>
-                  <div class="users-info">
-                    <span>12</span>
-                    <div class="progress-bar">
-                      <div class="progress-bar-fill" style="width: 60%;"></div>
-                    </div>
-                  </div>
-                </td>
-                <td>20</td>
-                <td>
-                  <div class="expiry-info">
-                    <span>15/05/2023</span>
-                    <small class="days-remaining">
-                      (expirée)
-                    </small>
-                  </div>
-                </td>
-                <td>
-                  <button style="background: none; border: none; cursor: pointer;">
-                    <span class="material-icons">more_vert</span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="license-key">
-                    <strong>LIC-87654321</strong>
-                    <span class="material-icons" style="color: #f39c12;" title="Expire bientôt">warning</span>
-                  </div>
-                </td>
-                <td>Société XYZ</td>
-                <td><span class="mat-chip">Standard</span></td>
-                <td><span class="mat-chip primary">Active</span></td>
-                <td>
-                  <div class="users-info">
-                    <span>18</span>
-                    <div class="progress-bar">
-                      <div class="progress-bar-fill" style="width: 90%; background-color: #e74c3c;"></div>
-                    </div>
-                  </div>
-                </td>
-                <td>20</td>
-                <td>
-                  <div class="expiry-info">
-                    <span>30/06/2023</span>
-                    <small class="days-remaining">
-                      (15 jours)
-                    </small>
-                  </div>
-                </td>
-                <td>
-                  <button style="background: none; border: none; cursor: pointer;">
-                    <span class="material-icons">more_vert</span>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- Pagination -->
-          <div style="display: flex; justify-content: center; padding: 16px; background: white;">
-            <div style="display: flex; gap: 8px;">
-              <button style="padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 4px;">1</button>
-              <button style="padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 4px;">2</button>
-              <button style="padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 4px;">3</button>
-              <span style="padding: 8px 12px;">...</span>
-              <button style="padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 4px;">10</button>
+        
+        <div class="form-actions">
+          <button class="btn btn-primary" (click)="validateLicense()">
+            Valider
+          </button>
+          <button class="btn btn-secondary" (click)="hideValidationDialog()">
+            Fermer
+          </button>
+        </div>
+        
+        <div *ngIf="validationResult" class="validation-result">
+          <h4>Résultat de la validation</h4>
+          <div class="result-status" [ngClass]="validationResult.valid ? 'valid' : 'invalid'">
+            {{ validationResult.message }}
+          </div>
+          
+          <div *ngIf="validationResult.license" class="license-info">
+            <h5>Informations de la licence</h5>
+            <div class="detail-row">
+              <span class="label">Nom :</span>
+              <span class="value">{{ validationResult.license.licenseName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Type :</span>
+              <span class="value">{{ validationResult.license.licenseType }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Client :</span>
+              <span class="value">{{ validationResult.license.customerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Expiration :</span>
+              <span class="value">{{ formatDate(validationResult.license.expiryDate) }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</body>
-</html>
+</div>
+

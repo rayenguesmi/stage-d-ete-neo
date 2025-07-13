@@ -4,7 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 @Document(collection = "licenses")
 public class LicenseEntity {
@@ -12,86 +13,110 @@ public class LicenseEntity {
     @Id
     private String id;
 
+    @Field("license_name")
+    private String licenseName;
+
     @Field("license_key")
     private String licenseKey;
 
-    @Field("client_name")
-    private String clientName;
-
-    @Field("project_id")
-    private String projectId;
-
     @Field("license_type")
-    private String licenseType; // STANDARD, PREMIUM, ENTERPRISE
+    private String licenseType; // STANDARD, PREMIUM, ENTERPRISE, TRIAL
 
-    @Field("status")
-    private String status; // ACTIVE, EXPIRED, SUSPENDED, REVOKED
+    @Field("product_name")
+    private String productName;
+
+    @Field("product_version")
+    private String productVersion;
+
+    @Field("customer_name")
+    private String customerName;
+
+    @Field("customer_email")
+    private String customerEmail;
+
+    @Field("organization")
+    private String organization;
 
     @Field("max_users")
     private Integer maxUsers;
 
-    @Field("current_users")
-    private Integer currentUsers;
+    @Field("max_projects")
+    private Integer maxProjects;
 
     @Field("features")
-    private String features; // JSON string des fonctionnalités autorisées
+    private List<String> features; // Liste des fonctionnalités activées
 
-    @Field("start_date")
-    private LocalDateTime startDate;
+    @Field("issue_date")
+    private Date issueDate;
 
-    @Field("end_date")
-    private LocalDateTime endDate;
+    @Field("expiry_date")
+    private Date expiryDate;
 
-    @Field("created_at")
-    private LocalDateTime createdAt;
+    @Field("activation_date")
+    private Date activationDate;
 
-    @Field("updated_at")
-    private LocalDateTime updatedAt;
+    @Field("is_active")
+    private Boolean isActive;
+
+    @Field("is_trial")
+    private Boolean isTrial;
+
+    @Field("usage_count")
+    private Integer usageCount; // Nombre d'utilisations
+
+    @Field("max_usage")
+    private Integer maxUsage; // Limite d'utilisation
+
+    @Field("hardware_fingerprint")
+    private String hardwareFingerprint;
+
+    @Field("ip_restrictions")
+    private List<String> ipRestrictions;
+
+    @Field("domain_restrictions")
+    private List<String> domainRestrictions;
+
+    @Field("notes")
+    private String notes;
 
     @Field("created_by")
     private String createdBy;
 
-    @Field("last_check")
-    private LocalDateTime lastCheck;
+    @Field("created_at")
+    private Date createdAt;
 
-    @Field("alert_sent")
-    private Boolean alertSent; // Pour les alertes d'expiration
+    @Field("updated_by")
+    private String updatedBy;
 
-    @Field("days_before_expiry_alert")
-    private Integer daysBeforeExpiryAlert; // Nombre de jours avant expiration pour envoyer l'alerte
+    @Field("updated_at")
+    private Date updatedAt;
+
+    @Field("last_validation")
+    private Date lastValidation;
+
+    @Field("validation_status")
+    private String validationStatus; // VALID, EXPIRED, INVALID, SUSPENDED
 
     // Constructeurs
     public LicenseEntity() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.status = "ACTIVE";
-        this.currentUsers = 0;
-        this.alertSent = false;
-        this.daysBeforeExpiryAlert = 30; // Par défaut 30 jours
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+        this.isActive = true;
+        this.isTrial = false;
+        this.usageCount = 0;
+        this.validationStatus = "VALID";
     }
 
-    public LicenseEntity(String licenseKey, String clientName, String licenseType, Integer maxUsers) {
+    public LicenseEntity(String licenseName, String licenseType, String productName, 
+                        String customerName, String customerEmail, Date expiryDate) {
         this();
-        this.licenseKey = licenseKey;
-        this.clientName = clientName;
+        this.licenseName = licenseName;
         this.licenseType = licenseType;
-        this.maxUsers = maxUsers;
-    }
-
-    // Méthodes utilitaires
-    public boolean isExpired() {
-        return endDate != null && LocalDateTime.now().isAfter(endDate);
-    }
-
-    public boolean isExpiringSoon() {
-        if (endDate == null) return false;
-        LocalDateTime alertDate = endDate.minusDays(daysBeforeExpiryAlert);
-        return LocalDateTime.now().isAfter(alertDate) && LocalDateTime.now().isBefore(endDate);
-    }
-
-    public long getDaysUntilExpiry() {
-        if (endDate == null) return -1;
-        return java.time.Duration.between(LocalDateTime.now(), endDate).toDays();
+        this.productName = productName;
+        this.customerName = customerName;
+        this.customerEmail = customerEmail;
+        this.expiryDate = expiryDate;
+        this.issueDate = new Date();
     }
 
     // Getters et Setters
@@ -103,28 +128,20 @@ public class LicenseEntity {
         this.id = id;
     }
 
+    public String getLicenseName() {
+        return licenseName;
+    }
+
+    public void setLicenseName(String licenseName) {
+        this.licenseName = licenseName;
+    }
+
     public String getLicenseKey() {
         return licenseKey;
     }
 
     public void setLicenseKey(String licenseKey) {
         this.licenseKey = licenseKey;
-    }
-
-    public String getClientName() {
-        return clientName;
-    }
-
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
     }
 
     public String getLicenseType() {
@@ -135,12 +152,44 @@ public class LicenseEntity {
         this.licenseType = licenseType;
     }
 
-    public String getStatus() {
-        return status;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductVersion() {
+        return productVersion;
+    }
+
+    public void setProductVersion(String productVersion) {
+        this.productVersion = productVersion;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
     }
 
     public Integer getMaxUsers() {
@@ -151,52 +200,108 @@ public class LicenseEntity {
         this.maxUsers = maxUsers;
     }
 
-    public Integer getCurrentUsers() {
-        return currentUsers;
+    public Integer getMaxProjects() {
+        return maxProjects;
     }
 
-    public void setCurrentUsers(Integer currentUsers) {
-        this.currentUsers = currentUsers;
+    public void setMaxProjects(Integer maxProjects) {
+        this.maxProjects = maxProjects;
     }
 
-    public String getFeatures() {
+    public List<String> getFeatures() {
         return features;
     }
 
-    public void setFeatures(String features) {
+    public void setFeatures(List<String> features) {
         this.features = features;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;
+    public Date getIssueDate() {
+        return issueDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
+    public void setIssueDate(Date issueDate) {
+        this.issueDate = issueDate;
     }
 
-    public LocalDateTime getEndDate() {
-        return endDate;
+    public Date getExpiryDate() {
+        return expiryDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public Date getActivationDate() {
+        return activationDate;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setActivationDate(Date activationDate) {
+        this.activationDate = activationDate;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public Boolean getIsActive() {
+        return isActive;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public Boolean getIsTrial() {
+        return isTrial;
+    }
+
+    public void setIsTrial(Boolean isTrial) {
+        this.isTrial = isTrial;
+    }
+
+    public Integer getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(Integer usageCount) {
+        this.usageCount = usageCount;
+    }
+
+    public Integer getMaxUsage() {
+        return maxUsage;
+    }
+
+    public void setMaxUsage(Integer maxUsage) {
+        this.maxUsage = maxUsage;
+    }
+
+    public String getHardwareFingerprint() {
+        return hardwareFingerprint;
+    }
+
+    public void setHardwareFingerprint(String hardwareFingerprint) {
+        this.hardwareFingerprint = hardwareFingerprint;
+    }
+
+    public List<String> getIpRestrictions() {
+        return ipRestrictions;
+    }
+
+    public void setIpRestrictions(List<String> ipRestrictions) {
+        this.ipRestrictions = ipRestrictions;
+    }
+
+    public List<String> getDomainRestrictions() {
+        return domainRestrictions;
+    }
+
+    public void setDomainRestrictions(List<String> domainRestrictions) {
+        this.domainRestrictions = domainRestrictions;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public String getCreatedBy() {
@@ -207,28 +312,85 @@ public class LicenseEntity {
         this.createdBy = createdBy;
     }
 
-    public LocalDateTime getLastCheck() {
-        return lastCheck;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setLastCheck(LocalDateTime lastCheck) {
-        this.lastCheck = lastCheck;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public Boolean getAlertSent() {
-        return alertSent;
+    public String getUpdatedBy() {
+        return updatedBy;
     }
 
-    public void setAlertSent(Boolean alertSent) {
-        this.alertSent = alertSent;
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
-    public Integer getDaysBeforeExpiryAlert() {
-        return daysBeforeExpiryAlert;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setDaysBeforeExpiryAlert(Integer daysBeforeExpiryAlert) {
-        this.daysBeforeExpiryAlert = daysBeforeExpiryAlert;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getLastValidation() {
+        return lastValidation;
+    }
+
+    public void setLastValidation(Date lastValidation) {
+        this.lastValidation = lastValidation;
+    }
+
+    public String getValidationStatus() {
+        return validationStatus;
+    }
+
+    public void setValidationStatus(String validationStatus) {
+        this.validationStatus = validationStatus;
+    }
+
+    // Méthodes utilitaires
+    public boolean isExpired() {
+        return expiryDate != null && expiryDate.before(new Date());
+    }
+
+    public boolean isValid() {
+        return isActive && !isExpired() && "VALID".equals(validationStatus);
+    }
+
+    public long getDaysUntilExpiry() {
+        if (expiryDate == null) return -1;
+        long diff = expiryDate.getTime() - new Date().getTime();
+        return diff / (24 * 60 * 60 * 1000);
+    }
+
+    public void incrementUsage() {
+        if (usageCount == null) usageCount = 0;
+        usageCount++;
+        this.updatedAt = new Date();
+    }
+
+    public boolean hasUsageLeft() {
+        if (maxUsage == null) return true;
+        return usageCount == null || usageCount < maxUsage;
+    }
+
+    @Override
+    public String toString() {
+        return "LicenseEntity{" +
+                "id='" + id + '\'' +
+                ", licenseName='" + licenseName + '\'' +
+                ", licenseType='" + licenseType + '\'' +
+                ", productName='" + productName + '\'' +
+                ", customerName='" + customerName + '\'' +
+                ", customerEmail='" + customerEmail + '\'' +
+                ", expiryDate=" + expiryDate +
+                ", isActive=" + isActive +
+                ", validationStatus='" + validationStatus + '\'' +
+                '}';
     }
 }
 

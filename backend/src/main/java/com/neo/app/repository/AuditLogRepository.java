@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -28,28 +28,28 @@ public interface AuditLogRepository extends MongoRepository<AuditLogEntity, Stri
     List<AuditLogEntity> findBySuccess(Boolean success);
 
     @Query("{'timestamp': {'$gte': ?0, '$lte': ?1}}")
-    List<AuditLogEntity> findByTimestampBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findByTimestampBetween(Date startDate, Date endDate);
 
     @Query("{'userId': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}")
-    List<AuditLogEntity> findByUserIdAndTimestampBetween(String userId, LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findByUserIdAndTimestampBetween(String userId, Date startDate, Date endDate);
 
     @Query("{'action': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}")
-    List<AuditLogEntity> findByActionAndTimestampBetween(String action, LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findByActionAndTimestampBetween(String action, Date startDate, Date endDate);
 
     @Query("{'resourceType': ?0, 'resourceId': ?1}")
     List<AuditLogEntity> findByResourceTypeAndResourceId(String resourceType, String resourceId);
 
     @Query("{'projectId': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}")
-    List<AuditLogEntity> findByProjectIdAndTimestampBetween(String projectId, LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findByProjectIdAndTimestampBetween(String projectId, Date startDate, Date endDate);
 
     @Query("{'success': false, 'timestamp': {'$gte': ?0, '$lte': ?1}}")
-    List<AuditLogEntity> findFailedActionsBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findFailedActionsBetween(Date startDate, Date endDate);
 
     @Query("{'action': {'$in': ['LOGIN', 'LOGOUT']}, 'userId': ?0}")
     List<AuditLogEntity> findLoginLogsByUserId(String userId);
 
     @Query("{'ipAddress': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}")
-    List<AuditLogEntity> findByIpAddressAndTimestampBetween(String ipAddress, LocalDateTime startDate, LocalDateTime endDate);
+    List<AuditLogEntity> findByIpAddressAndTimestampBetween(String ipAddress, Date startDate, Date endDate);
 
     // Méthodes avec pagination
     Page<AuditLogEntity> findByUserId(String userId, Pageable pageable);
@@ -57,19 +57,19 @@ public interface AuditLogRepository extends MongoRepository<AuditLogEntity, Stri
     Page<AuditLogEntity> findByProjectId(String projectId, Pageable pageable);
 
     @Query("{'timestamp': {'$gte': ?0, '$lte': ?1}}")
-    Page<AuditLogEntity> findByTimestampBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<AuditLogEntity> findByTimestampBetween(Date startDate, Date endDate, Pageable pageable);
 
     // Méthodes de comptage
     @Query(value = "{'userId': ?0}", count = true)
     long countByUserId(String userId);
 
     @Query(value = "{'action': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}", count = true)
-    long countByActionAndTimestampBetween(String action, LocalDateTime startDate, LocalDateTime endDate);
+    long countByActionAndTimestampBetween(String action, Date startDate, Date endDate);
 
     @Query(value = "{'success': false, 'timestamp': {'$gte': ?0, '$lte': ?1}}", count = true)
-    long countFailedActionsBetween(LocalDateTime startDate, LocalDateTime endDate);
+    long countFailedActionsBetween(Date startDate, Date endDate);
 
     @Query(value = "{'projectId': ?0, 'timestamp': {'$gte': ?1, '$lte': ?2}}", count = true)
-    long countByProjectIdAndTimestampBetween(String projectId, LocalDateTime startDate, LocalDateTime endDate);
+    long countByProjectIdAndTimestampBetween(String projectId, Date startDate, Date endDate);
 }
 

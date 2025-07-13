@@ -2,15 +2,12 @@ package com.neo.app.controller;
 
 import com.neo.app.documents.LicenseEntity;
 import com.neo.app.service.LicenseService;
-import com.neo.app.service.AuditLogService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,448 +19,287 @@ public class LicenseController {
     @Autowired
     private LicenseService licenseService;
 
-    @Autowired
-    private AuditLogService auditLogService;
-
-    // Création d'une licence (Admin général seulement)
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> createLicense(@RequestBody LicenseEntity license, HttpServletRequest request) {
-        try {
-            license.setCreatedBy(getCurrentUserId(request));
-            LicenseEntity createdLicense = licenseService.createLicense(license);
-
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "CREATE",
-                    "LICENSE",
-                    createdLicense.getId(),
-                    "License created: " + createdLicense.getLicenseKey(),
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdLicense);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors de la création de la licence", e.getMessage()));
-        }
-    }
-
-    // Mise à jour d'une licence
-    @PutMapping("/{licenseId}")
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> updateLicense(@PathVariable String licenseId,
-                                           @RequestBody LicenseEntity license,
-                                           HttpServletRequest request) {
-        try {
-            LicenseEntity updatedLicense = licenseService.updateLicense(licenseId, license);
-
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "UPDATE",
-                    "LICENSE",
-                    updatedLicense.getId(),
-                    "License updated: " + updatedLicense.getLicenseKey(),
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(updatedLicense);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors de la mise à jour de la licence", e.getMessage()));
-        }
-    }
-
-    // Suppression d'une licence (Admin général seulement)
-    @DeleteMapping("/{licenseId}")
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> deleteLicense(@PathVariable String licenseId, HttpServletRequest request) {
-        try {
-            licenseService.deleteLicense(licenseId);
-
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "DELETE",
-                    "LICENSE",
-                    licenseId,
-                    "License deleted",
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(new SuccessResponse("Licence supprimée avec succès"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors de la suppression de la licence", e.getMessage()));
-        }
-    }
-
-    // Récupération d'une licence par ID
-    @GetMapping("/{licenseId}")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicenseById(@PathVariable String licenseId) {
-        try {
-            Optional<LicenseEntity> license = licenseService.getLicenseById(licenseId);
-            if (license.isPresent()) {
-                return ResponseEntity.ok(license.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ErrorResponse("Licence non trouvée", "Aucune licence trouvée avec l'ID: " + licenseId));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération de la licence", e.getMessage()));
-        }
-    }
-
-    // Récupération de toutes les licences
+    /**
+     * Récupère toutes les licences
+     */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getAllLicenses() {
+    public ResponseEntity<List<LicenseEntity>> getAllLicenses() {
         try {
             List<LicenseEntity> licenses = licenseService.getAllLicenses();
             return ResponseEntity.ok(licenses);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // Récupération des licences actives
+    /**
+     * Récupère une licence par son ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<LicenseEntity> getLicenseById(@PathVariable String id) {
+        try {
+            Optional<LicenseEntity> license = licenseService.getLicenseById(id);
+            if (license.isPresent()) {
+                return ResponseEntity.ok(license.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Crée une nouvelle licence
+     */
+    @PostMapping
+    public ResponseEntity<LicenseEntity> createLicense(@RequestBody LicenseEntity license) {
+        try {
+            LicenseEntity createdLicense = licenseService.createLicense(license);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdLicense);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Met à jour une licence existante
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<LicenseEntity> updateLicense(@PathVariable String id, @RequestBody LicenseEntity license) {
+        try {
+            LicenseEntity updatedLicense = licenseService.updateLicense(id, license);
+            return ResponseEntity.ok(updatedLicense);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Supprime une licence
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteLicense(@PathVariable String id) {
+        try {
+            licenseService.deleteLicense(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Valide une licence par sa clé
+     */
+    @PostMapping("/validate")
+    public ResponseEntity<LicenseService.LicenseValidationResult> validateLicense(@RequestBody ValidateLicenseRequest request) {
+        try {
+            LicenseService.LicenseValidationResult result = licenseService.validateLicense(request.getLicenseKey());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Active une licence par sa clé
+     */
+    @PostMapping("/activate")
+    public ResponseEntity<LicenseEntity> activateLicense(@RequestBody ActivateLicenseRequest request) {
+        try {
+            LicenseEntity activatedLicense = licenseService.activateLicense(request.getLicenseKey());
+            return ResponseEntity.ok(activatedLicense);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Désactive une licence
+     */
+    @PostMapping("/{id}/deactivate")
+    public ResponseEntity<LicenseEntity> deactivateLicense(@PathVariable String id) {
+        try {
+            LicenseEntity deactivatedLicense = licenseService.deactivateLicense(id);
+            return ResponseEntity.ok(deactivatedLicense);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Recherche des licences
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<LicenseEntity>> searchLicenses(@RequestParam(required = false) String q) {
+        try {
+            List<LicenseEntity> licenses = licenseService.searchLicenses(q);
+            return ResponseEntity.ok(licenses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Récupère les licences par type
+     */
+    @GetMapping("/type/{licenseType}")
+    public ResponseEntity<List<LicenseEntity>> getLicensesByType(@PathVariable String licenseType) {
+        try {
+            List<LicenseEntity> licenses = licenseService.getLicensesByType(licenseType);
+            return ResponseEntity.ok(licenses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Récupère les licences actives
+     */
     @GetMapping("/active")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getActiveLicenses() {
+    public ResponseEntity<List<LicenseEntity>> getActiveLicenses() {
         try {
             List<LicenseEntity> licenses = licenseService.getActiveLicenses();
             return ResponseEntity.ok(licenses);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences actives", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // Récupération des licences par statut
-    @GetMapping("/status/{status}")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicensesByStatus(@PathVariable String status) {
-        try {
-            List<LicenseEntity> licenses = licenseService.getLicensesByStatus(status);
-            return ResponseEntity.ok(licenses);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences par statut", e.getMessage()));
-        }
-    }
-
-    // Récupération des licences par type
-    @GetMapping("/type/{type}")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicensesByType(@PathVariable String type) {
-        try {
-            List<LicenseEntity> licenses = licenseService.getLicensesByType(type);
-            return ResponseEntity.ok(licenses);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences par type", e.getMessage()));
-        }
-    }
-
-    // Recherche de licences par nom de client
-    @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> searchLicenses(@RequestParam String clientName) {
-        try {
-            List<LicenseEntity> licenses = licenseService.searchLicensesByClient(clientName);
-            return ResponseEntity.ok(licenses);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la recherche de licences", e.getMessage()));
-        }
-    }
-
-    // Récupération des licences expirées
+    /**
+     * Récupère les licences expirées
+     */
     @GetMapping("/expired")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getExpiredLicenses() {
+    public ResponseEntity<List<LicenseEntity>> getExpiredLicenses() {
         try {
             List<LicenseEntity> licenses = licenseService.getExpiredLicenses();
             return ResponseEntity.ok(licenses);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences expirées", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // Récupération des licences qui expirent bientôt
+    /**
+     * Récupère les licences qui expirent bientôt
+     */
     @GetMapping("/expiring-soon")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicensesExpiringSoon(@RequestParam(defaultValue = "30") int days) {
+    public ResponseEntity<List<LicenseEntity>> getLicensesExpiringSoon(@RequestParam(defaultValue = "30") int days) {
         try {
             List<LicenseEntity> licenses = licenseService.getLicensesExpiringSoon(days);
             return ResponseEntity.ok(licenses);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences expirant bientôt", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // Validation d'une licence
-    @GetMapping("/validate/{licenseKey}")
-    public ResponseEntity<?> validateLicense(@PathVariable String licenseKey) {
+    /**
+     * Récupère les statistiques des licences
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<LicenseService.LicenseStatistics> getLicenseStatistics() {
         try {
-            boolean isValid = licenseService.validateLicense(licenseKey);
-            return ResponseEntity.ok(new ValidationResponse(isValid, isValid ? "Licence valide" : "Licence invalide ou expirée"));
+            LicenseService.LicenseStatistics statistics = licenseService.getLicenseStatistics();
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Initialise des licences par défaut pour les tests
+     */
+    @PostMapping("/initialize-defaults")
+    public ResponseEntity<String> initializeDefaultLicenses() {
+        try {
+            // Licence Standard
+            LicenseEntity standardLicense = new LicenseEntity();
+            standardLicense.setLicenseName("Licence Standard Neo.TM");
+            standardLicense.setLicenseType("STANDARD");
+            standardLicense.setProductName("Neo.TM");
+            standardLicense.setProductVersion("1.0.0");
+            standardLicense.setCustomerName("Entreprise Demo");
+            standardLicense.setCustomerEmail("demo@entreprise.com");
+            standardLicense.setOrganization("Demo Corp");
+            standardLicense.setMaxUsers(10);
+            standardLicense.setMaxProjects(5);
+            standardLicense.setFeatures(List.of("USER_MANAGEMENT", "PROJECT_MANAGEMENT", "BASIC_REPORTING"));
+            
+            // Date d'expiration dans 1 an
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, 1);
+            standardLicense.setExpiryDate(cal.getTime());
+            
+            licenseService.createLicense(standardLicense);
+
+            // Licence Premium
+            LicenseEntity premiumLicense = new LicenseEntity();
+            premiumLicense.setLicenseName("Licence Premium Neo.TM");
+            premiumLicense.setLicenseType("PREMIUM");
+            premiumLicense.setProductName("Neo.TM");
+            premiumLicense.setProductVersion("1.0.0");
+            premiumLicense.setCustomerName("Entreprise Premium");
+            premiumLicense.setCustomerEmail("premium@entreprise.com");
+            premiumLicense.setOrganization("Premium Corp");
+            premiumLicense.setMaxUsers(50);
+            premiumLicense.setMaxProjects(25);
+            premiumLicense.setFeatures(List.of("USER_MANAGEMENT", "PROJECT_MANAGEMENT", "ADVANCED_REPORTING", "API_ACCESS", "CUSTOM_ROLES"));
+            
+            cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, 2);
+            premiumLicense.setExpiryDate(cal.getTime());
+            
+            licenseService.createLicense(premiumLicense);
+
+            // Licence d'essai
+            LicenseEntity trialLicense = new LicenseEntity();
+            trialLicense.setLicenseName("Licence d'Essai Neo.TM");
+            trialLicense.setLicenseType("TRIAL");
+            trialLicense.setProductName("Neo.TM");
+            trialLicense.setProductVersion("1.0.0");
+            trialLicense.setCustomerName("Utilisateur Test");
+            trialLicense.setCustomerEmail("test@example.com");
+            trialLicense.setMaxUsers(3);
+            trialLicense.setMaxProjects(2);
+            trialLicense.setIsTrial(true);
+            trialLicense.setMaxUsage(100);
+            trialLicense.setFeatures(List.of("USER_MANAGEMENT", "PROJECT_MANAGEMENT"));
+            
+            cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, 30);
+            trialLicense.setExpiryDate(cal.getTime());
+            
+            licenseService.createLicense(trialLicense);
+
+            return ResponseEntity.ok("Licences par défaut créées avec succès");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la validation de la licence", e.getMessage()));
+                .body("Erreur lors de la création des licences par défaut: " + e.getMessage());
         }
     }
 
-    // Changement de statut d'une licence
-    @PatchMapping("/{licenseId}/status")
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> changeLicenseStatus(@PathVariable String licenseId,
-                                                  @RequestParam String status,
-                                                  HttpServletRequest request) {
-        try {
-            LicenseEntity updatedLicense = licenseService.changeLicenseStatus(licenseId, status);
+    // Classes pour les requêtes
+    public static class ValidateLicenseRequest {
+        private String licenseKey;
 
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "STATUS_CHANGE",
-                    "LICENSE",
-                    licenseId,
-                    "License status changed to: " + status,
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(updatedLicense);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors du changement de statut", e.getMessage()));
-        }
+        public String getLicenseKey() { return licenseKey; }
+        public void setLicenseKey(String licenseKey) { this.licenseKey = licenseKey; }
     }
 
-    // Mise à jour du nombre d'utilisateurs actuels
-    @PatchMapping("/{licenseId}/users")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> updateCurrentUsers(@PathVariable String licenseId,
-                                                 @RequestParam int currentUsers,
-                                                 HttpServletRequest request) {
-        try {
-            LicenseEntity updatedLicense = licenseService.updateCurrentUsers(licenseId, currentUsers);
+    public static class ActivateLicenseRequest {
+        private String licenseKey;
 
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "UPDATE_USERS",
-                    "LICENSE",
-                    licenseId,
-                    "License current users updated to: " + currentUsers,
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(updatedLicense);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors de la mise à jour du nombre d'utilisateurs", e.getMessage()));
-        }
-    }
-
-    // Renouvellement d'une licence
-    @PatchMapping("/{licenseId}/renew")
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> renewLicense(@PathVariable String licenseId,
-                                          @RequestParam String newEndDate,
-                                          HttpServletRequest request) {
-        try {
-            LocalDateTime endDate = LocalDateTime.parse(newEndDate);
-            LicenseEntity renewedLicense = licenseService.renewLicense(licenseId, endDate);
-
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "RENEW",
-                    "LICENSE",
-                    licenseId,
-                    "License renewed until: " + newEndDate,
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(renewedLicense);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Erreur lors du renouvellement de la licence", e.getMessage()));
-        }
-    }
-
-    // Vérification des licences et envoi d'alertes
-    @PostMapping("/check-alerts")
-    @PreAuthorize("hasRole('ADMIN_GENERAL')")
-    public ResponseEntity<?> checkLicensesAndSendAlerts(HttpServletRequest request) {
-        try {
-            licenseService.checkLicensesAndSendAlerts();
-
-            auditLogService.logAction(
-                    getCurrentUserId(request),
-                    getCurrentUsername(request),
-                    "CHECK_ALERTS",
-                    "LICENSE",
-                    null,
-                    "License alerts check executed",
-                    getClientIpAddress(request),
-                    request.getHeader("User-Agent"),
-                    request.getSession().getId()
-            );
-
-            return ResponseEntity.ok(new SuccessResponse("Vérification des alertes effectuée"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la vérification des alertes", e.getMessage()));
-        }
-    }
-
-    // Récupération des licences proches de la limite d'utilisateurs
-    @GetMapping("/near-user-limit")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicensesNearUserLimit() {
-        try {
-            List<LicenseEntity> licenses = licenseService.getLicensesNearUserLimit();
-            return ResponseEntity.ok(licenses);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des licences proches de la limite", e.getMessage()));
-        }
-    }
-
-    // Statistiques des licences
-    @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN_GENERAL') or hasRole('CHEF_PROJET')")
-    public ResponseEntity<?> getLicenseStats() {
-        try {
-            LicenseStatsResponse stats = new LicenseStatsResponse();
-            stats.setActiveCount(licenseService.countLicensesByStatus("ACTIVE"));
-            stats.setExpiredCount(licenseService.countLicensesByStatus("EXPIRED"));
-            stats.setSuspendedCount(licenseService.countLicensesByStatus("SUSPENDED"));
-            stats.setStandardCount(licenseService.countLicensesByType("STANDARD"));
-            stats.setPremiumCount(licenseService.countLicensesByType("PREMIUM"));
-            stats.setEnterpriseCount(licenseService.countLicensesByType("ENTERPRISE"));
-
-            return ResponseEntity.ok(stats);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Erreur lors de la récupération des statistiques", e.getMessage()));
-        }
-    }
-
-    // Méthodes utilitaires
-    private String getCurrentUserId(HttpServletRequest request) {
-        return request.getHeader("X-User-ID");
-    }
-
-    private String getCurrentUsername(HttpServletRequest request) {
-        return request.getHeader("X-Username");
-    }
-
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
-    }
-
-    // Classes pour les réponses
-    public static class ErrorResponse {
-        private String error;
-        private String message;
-
-        public ErrorResponse(String error, String message) {
-            this.error = error;
-            this.message = message;
-        }
-
-        public String getError() { return error; }
-        public void setError(String error) { this.error = error; }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class SuccessResponse {
-        private String message;
-
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class ValidationResponse {
-        private boolean valid;
-        private String message;
-
-        public ValidationResponse(boolean valid, String message) {
-            this.valid = valid;
-            this.message = message;
-        }
-
-        public boolean isValid() { return valid; }
-        public void setValid(boolean valid) { this.valid = valid; }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class LicenseStatsResponse {
-        private long activeCount;
-        private long expiredCount;
-        private long suspendedCount;
-        private long standardCount;
-        private long premiumCount;
-        private long enterpriseCount;
-
-        // Getters et Setters
-        public long getActiveCount() { return activeCount; }
-        public void setActiveCount(long activeCount) { this.activeCount = activeCount; }
-
-        public long getExpiredCount() { return expiredCount; }
-        public void setExpiredCount(long expiredCount) { this.expiredCount = expiredCount; }
-
-        public long getSuspendedCount() { return suspendedCount; }
-        public void setSuspendedCount(long suspendedCount) { this.suspendedCount = suspendedCount; }
-
-        public long getStandardCount() { return standardCount; }
-        public void setStandardCount(long standardCount) { this.standardCount = standardCount; }
-
-        public long getPremiumCount() { return premiumCount; }
-        public void setPremiumCount(long premiumCount) { this.premiumCount = premiumCount; }
-
-        public long getEnterpriseCount() { return enterpriseCount; }
-        public void setEnterpriseCount(long enterpriseCount) { this.enterpriseCount = enterpriseCount; }
+        public String getLicenseKey() { return licenseKey; }
+        public void setLicenseKey(String licenseKey) { this.licenseKey = licenseKey; }
     }
 }
 

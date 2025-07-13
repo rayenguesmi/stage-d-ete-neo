@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +17,19 @@ public class AuditLogService {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
-    // Enregistrement d'une action d'audit
-    public AuditLogEntity logAction(String userId, String username, String action,
-                                    String resourceType, String resourceId, String details) {
-        AuditLogEntity auditLog = new AuditLogEntity(userId, username, action, resourceType, resourceId, details);
+    // Enregistrement d'une action d'audit (méthode simplifiée)
+    public AuditLogEntity logAction(String userId, String action, String resourceType, 
+                                    String resourceId, String oldValues, String details) {
+        AuditLogEntity auditLog = new AuditLogEntity();
+        auditLog.setUserId(userId);
+        auditLog.setUsername(userId); // TODO: Récupérer le vrai nom d'utilisateur
+        auditLog.setAction(action);
+        auditLog.setResourceType(resourceType);
+        auditLog.setResourceId(resourceId);
+        auditLog.setDetails(details);
+        auditLog.setTimestamp(new Date());
+        auditLog.setSuccess(true);
+        
         return auditLogRepository.save(auditLog);
     }
 
@@ -102,27 +111,27 @@ public class AuditLogService {
     }
 
     // Récupération des logs par période
-    public List<AuditLogEntity> getLogsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getLogsByPeriod(Date startDate, Date endDate) {
         return auditLogRepository.findByTimestampBetween(startDate, endDate);
     }
 
     // Récupération des logs par période avec pagination
-    public Page<AuditLogEntity> getLogsByPeriod(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+    public Page<AuditLogEntity> getLogsByPeriod(Date startDate, Date endDate, Pageable pageable) {
         return auditLogRepository.findByTimestampBetween(startDate, endDate, pageable);
     }
 
     // Récupération des logs par utilisateur et période
-    public List<AuditLogEntity> getLogsByUserAndPeriod(String userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getLogsByUserAndPeriod(String userId, Date startDate, Date endDate) {
         return auditLogRepository.findByUserIdAndTimestampBetween(userId, startDate, endDate);
     }
 
     // Récupération des logs par action et période
-    public List<AuditLogEntity> getLogsByActionAndPeriod(String action, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getLogsByActionAndPeriod(String action, Date startDate, Date endDate) {
         return auditLogRepository.findByActionAndTimestampBetween(action, startDate, endDate);
     }
 
     // Récupération des logs par projet et période
-    public List<AuditLogEntity> getLogsByProjectAndPeriod(String projectId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getLogsByProjectAndPeriod(String projectId, Date startDate, Date endDate) {
         return auditLogRepository.findByProjectIdAndTimestampBetween(projectId, startDate, endDate);
     }
 
@@ -132,7 +141,7 @@ public class AuditLogService {
     }
 
     // Récupération des actions échouées par période
-    public List<AuditLogEntity> getFailedActionsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getFailedActionsByPeriod(Date startDate, Date endDate) {
         return auditLogRepository.findFailedActionsBetween(startDate, endDate);
     }
 
@@ -142,7 +151,7 @@ public class AuditLogService {
     }
 
     // Récupération des logs par adresse IP et période
-    public List<AuditLogEntity> getLogsByIpAndPeriod(String ipAddress, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<AuditLogEntity> getLogsByIpAndPeriod(String ipAddress, Date startDate, Date endDate) {
         return auditLogRepository.findByIpAddressAndTimestampBetween(ipAddress, startDate, endDate);
     }
 
@@ -152,17 +161,17 @@ public class AuditLogService {
     }
 
     // Statistiques - Nombre d'actions par type et période
-    public long countActionsByTypeAndPeriod(String action, LocalDateTime startDate, LocalDateTime endDate) {
+    public long countActionsByTypeAndPeriod(String action, Date startDate, Date endDate) {
         return auditLogRepository.countByActionAndTimestampBetween(action, startDate, endDate);
     }
 
     // Statistiques - Nombre d'actions échouées par période
-    public long countFailedActionsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+    public long countFailedActionsByPeriod(Date startDate, Date endDate) {
         return auditLogRepository.countFailedActionsBetween(startDate, endDate);
     }
 
     // Statistiques - Nombre d'actions par projet et période
-    public long countActionsByProjectAndPeriod(String projectId, LocalDateTime startDate, LocalDateTime endDate) {
+    public long countActionsByProjectAndPeriod(String projectId, Date startDate, Date endDate) {
         return auditLogRepository.countByProjectIdAndTimestampBetween(projectId, startDate, endDate);
     }
 
@@ -177,9 +186,9 @@ public class AuditLogService {
     }
 
     // Suppression des logs anciens (pour maintenance)
-    public void deleteOldLogs(LocalDateTime beforeDate) {
+    public void deleteOldLogs(Date beforeDate) {
         List<AuditLogEntity> oldLogs = auditLogRepository.findByTimestampBetween(
-                LocalDateTime.of(1970, 1, 1, 0, 0), beforeDate);
+                new Date(0), beforeDate);
         auditLogRepository.deleteAll(oldLogs);
 
         // Log de la maintenance
@@ -188,7 +197,7 @@ public class AuditLogService {
     }
 
     // Génération de rapport d'activité
-    public AuditReport generateActivityReport(LocalDateTime startDate, LocalDateTime endDate) {
+    public AuditReport generateActivityReport(Date startDate, Date endDate) {
         List<AuditLogEntity> logs = getLogsByPeriod(startDate, endDate);
 
         AuditReport report = new AuditReport();
@@ -214,8 +223,8 @@ public class AuditLogService {
 
     // Classe interne pour le rapport d'audit
     public static class AuditReport {
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private Date startDate;
+        private Date endDate;
         private long totalActions;
         private long loginCount;
         private long createCount;
@@ -224,11 +233,11 @@ public class AuditLogService {
         private long failedCount;
 
         // Getters et Setters
-        public LocalDateTime getStartDate() { return startDate; }
-        public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
+        public Date getStartDate() { return startDate; }
+        public void setStartDate(Date startDate) { this.startDate = startDate; }
 
-        public LocalDateTime getEndDate() { return endDate; }
-        public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+        public Date getEndDate() { return endDate; }
+        public void setEndDate(Date endDate) { this.endDate = endDate; }
 
         public long getTotalActions() { return totalActions; }
         public void setTotalActions(long totalActions) { this.totalActions = totalActions; }

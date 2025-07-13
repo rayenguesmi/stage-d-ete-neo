@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,51 +15,124 @@ public interface LicenseRepository extends MongoRepository<LicenseEntity, String
     // Recherche par clé de licence
     Optional<LicenseEntity> findByLicenseKey(String licenseKey);
 
-    // Recherche par nom de client
-    List<LicenseEntity> findByClientNameContainingIgnoreCase(String clientName);
+    // Recherche par nom de licence
+    List<LicenseEntity> findByLicenseName(String licenseName);
 
     // Recherche par type de licence
     List<LicenseEntity> findByLicenseType(String licenseType);
 
-    // Recherche par statut
-    List<LicenseEntity> findByStatus(String status);
+    // Recherche par nom de produit
+    List<LicenseEntity> findByProductName(String productName);
 
-    // Recherche par projet
-    Optional<LicenseEntity> findByProjectId(String projectId);
+    // Recherche par client
+    List<LicenseEntity> findByCustomerName(String customerName);
+
+    // Recherche par email client
+    List<LicenseEntity> findByCustomerEmail(String customerEmail);
+
+    // Recherche par organisation
+    List<LicenseEntity> findByOrganization(String organization);
 
     // Recherche des licences actives
-    List<LicenseEntity> findByStatusOrderByEndDateAsc(String status);
+    List<LicenseEntity> findByIsActive(Boolean isActive);
+
+    // Recherche des licences d'essai
+    List<LicenseEntity> findByIsTrial(Boolean isTrial);
+
+    // Recherche par statut de validation
+    List<LicenseEntity> findByValidationStatus(String validationStatus);
 
     // Recherche des licences expirées
-    @Query("{ 'endDate': { $lt: ?0 } }")
-    List<LicenseEntity> findExpiredLicenses(LocalDateTime currentDate);
+    @Query("{ 'expiryDate' : { $lt: ?0 } }")
+    List<LicenseEntity> findExpiredLicenses(Date currentDate);
 
     // Recherche des licences qui expirent bientôt
-    @Query("{ 'endDate': { $gte: ?0, $lte: ?1 }, 'status': 'ACTIVE' }")
-    List<LicenseEntity> findLicensesExpiringSoon(LocalDateTime startDate, LocalDateTime endDate);
-
-    // Recherche des licences qui expirent dans X jours
-    @Query("{ 'endDate': { $gte: ?0, $lte: ?1 }, 'status': 'ACTIVE', 'alertSent': false }")
-    List<LicenseEntity> findLicensesNeedingAlert(LocalDateTime startDate, LocalDateTime endDate);
-
-    // Vérifier si une clé de licence existe déjà
-    boolean existsByLicenseKey(String licenseKey);
-
-    // Compter les licences par statut
-    long countByStatus(String status);
-
-    // Compter les licences par type
-    long countByLicenseType(String licenseType);
+    @Query("{ 'expiryDate' : { $gte: ?0, $lte: ?1 } }")
+    List<LicenseEntity> findLicensesExpiringBetween(Date startDate, Date endDate);
 
     // Recherche des licences créées par un utilisateur
     List<LicenseEntity> findByCreatedBy(String createdBy);
 
-    // Recherche des licences avec un nombre d'utilisateurs proche de la limite
-    @Query("{ 'currentUsers': { $gte: { $multiply: ['$maxUsers', 0.8] } }, 'status': 'ACTIVE' }")
-    List<LicenseEntity> findLicensesNearUserLimit();
+    // Recherche des licences créées dans une période
+    List<LicenseEntity> findByCreatedAtBetween(Date startDate, Date endDate);
 
-    // Recherche des licences par plage de dates
-    @Query("{ 'startDate': { $gte: ?0 }, 'endDate': { $lte: ?1 } }")
-    List<LicenseEntity> findByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+    // Recherche des licences mises à jour dans une période
+    List<LicenseEntity> findByUpdatedAtBetween(Date startDate, Date endDate);
+
+    // Recherche des licences par produit et version
+    List<LicenseEntity> findByProductNameAndProductVersion(String productName, String productVersion);
+
+    // Recherche des licences actives par type
+    List<LicenseEntity> findByLicenseTypeAndIsActive(String licenseType, Boolean isActive);
+
+    // Recherche des licences par client et statut actif
+    List<LicenseEntity> findByCustomerNameAndIsActive(String customerName, Boolean isActive);
+
+    // Recherche des licences avec usage restant
+    @Query("{ $or: [ { 'maxUsage': null }, { $expr: { $lt: ['$usageCount', '$maxUsage'] } } ] }")
+    List<LicenseEntity> findLicensesWithUsageLeft();
+
+    // Recherche des licences par empreinte matérielle
+    Optional<LicenseEntity> findByHardwareFingerprint(String hardwareFingerprint);
+
+    // Compter les licences par type
+    long countByLicenseType(String licenseType);
+
+    // Compter les licences actives
+    long countByIsActive(Boolean isActive);
+
+    // Compter les licences d'essai
+    long countByIsTrial(Boolean isTrial);
+
+    // Compter les licences expirées
+    @Query(value = "{ 'expiryDate' : { $lt: ?0 } }", count = true)
+    long countExpiredLicenses(Date currentDate);
+
+    // Compter les licences par client
+    long countByCustomerName(String customerName);
+
+    // Compter les licences par organisation
+    long countByOrganization(String organization);
+
+    // Recherche des licences par nom contenant (recherche partielle)
+    List<LicenseEntity> findByLicenseNameContainingIgnoreCase(String licenseName);
+
+    // Recherche des licences par client contenant (recherche partielle)
+    List<LicenseEntity> findByCustomerNameContainingIgnoreCase(String customerName);
+
+    // Recherche des licences par organisation contenant (recherche partielle)
+    List<LicenseEntity> findByOrganizationContainingIgnoreCase(String organization);
+
+    // Recherche des licences avec des fonctionnalités spécifiques
+    @Query("{ 'features' : { $in: [?0] } }")
+    List<LicenseEntity> findByFeaturesContaining(String feature);
+
+    // Recherche des licences avec restrictions IP
+    @Query("{ 'ipRestrictions' : { $exists: true, $ne: [] } }")
+    List<LicenseEntity> findLicensesWithIpRestrictions();
+
+    // Recherche des licences avec restrictions de domaine
+    @Query("{ 'domainRestrictions' : { $exists: true, $ne: [] } }")
+    List<LicenseEntity> findLicensesWithDomainRestrictions();
+
+    // Recherche des licences validées récemment
+    List<LicenseEntity> findByLastValidationAfter(Date date);
+
+    // Recherche des licences par nombre maximum d'utilisateurs
+    List<LicenseEntity> findByMaxUsersGreaterThanEqual(Integer maxUsers);
+
+    // Recherche des licences par nombre maximum de projets
+    List<LicenseEntity> findByMaxProjectsGreaterThanEqual(Integer maxProjects);
+
+    // Recherche complexe : licences actives, non expirées et avec usage restant
+    @Query("{ 'isActive': true, 'expiryDate': { $gte: ?0 }, $or: [ { 'maxUsage': null }, { $expr: { $lt: ['$usageCount', '$maxUsage'] } } ] }")
+    List<LicenseEntity> findValidUsableLicenses(Date currentDate);
+
+    // Recherche des licences nécessitant une attention (expiration proche ou usage élevé)
+    @Query("{ $or: [ " +
+           "{ 'expiryDate': { $gte: ?0, $lte: ?1 } }, " +
+           "{ $expr: { $gte: [{ $divide: ['$usageCount', '$maxUsage'] }, 0.8] } } " +
+           "] }")
+    List<LicenseEntity> findLicensesNeedingAttention(Date currentDate, Date warningDate);
 }
 

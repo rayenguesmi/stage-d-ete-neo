@@ -5,10 +5,9 @@ import com.neo.app.repository.LicenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class LicenseService {
@@ -19,67 +18,134 @@ public class LicenseService {
     @Autowired
     private AuditLogService auditLogService;
 
-    // Création d'une licence
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom random = new SecureRandom();
+
+    // Création d'une nouvelle licence
     public LicenseEntity createLicense(LicenseEntity license) {
-        // Générer une clé de licence unique si elle n'est pas fournie
-        if (license.getLicenseKey() == null || license.getLicenseKey().isEmpty()) {
-            license.setLicenseKey(generateLicenseKey());
+        validateLicenseCreation(license);
+
+        // Générer une clé de licence unique
+        license.setLicenseKey(generateLicenseKey());
+        
+        // Définir les dates
+        license.setCreatedAt(new Date());
+        license.setUpdatedAt(new Date());
+        license.setIssueDate(new Date());
+        
+        // Définir les valeurs par défaut
+        if (license.getIsActive() == null) {
+            license.setIsActive(true);
+        }
+        if (license.getIsTrial() == null) {
+            license.setIsTrial(false);
+        }
+        if (license.getUsageCount() == null) {
+            license.setUsageCount(0);
+        }
+        if (license.getValidationStatus() == null) {
+            license.setValidationStatus("VALID");
         }
 
-        // Vérifier que la clé est unique
-        if (licenseRepository.existsByLicenseKey(license.getLicenseKey())) {
-            throw new RuntimeException("Une licence avec cette clé existe déjà");
-        }
+        LicenseEntity savedLicense = licenseRepository.save(license);
 
-        license.setCreatedAt(LocalDateTime.now());
-        license.setUpdatedAt(LocalDateTime.now());
-        license.setStatus("ACTIVE");
-        license.setCurrentUsers(0);
-        license.setAlertSent(false);
+        // Audit log
+        auditLogService.logAction(getCurrentUserId(),
+                "CREATE_LICENSE", "licenses", savedLicense.getId(), null,
+                "License created: " + savedLicense.getLicenseName());
 
-        return licenseRepository.save(license);
+        return savedLicense;
     }
 
     // Mise à jour d'une licence
     public LicenseEntity updateLicense(String licenseId, LicenseEntity updatedLicense) {
-        Optional<LicenseEntity> existingLicense = licenseRepository.findById(licenseId);
-        
-        if (existingLicense.isEmpty()) {
-            throw new RuntimeException("Licence non trouvée");
+        Optional<LicenseEntity> existingLicenseOpt = licenseRepository.findById(licenseId);
+        if (!existingLicenseOpt.isPresent()) {
+            throw new RuntimeException("Licence non trouvée avec l'ID: " + licenseId);
         }
 
-        LicenseEntity license = existingLicense.get();
-        
-        // Vérifier l'unicité de la clé si elle a changé
-        if (!license.getLicenseKey().equals(updatedLicense.getLicenseKey()) && 
-            licenseRepository.existsByLicenseKey(updatedLicense.getLicenseKey())) {
-            throw new RuntimeException("Une licence avec cette clé existe déjà");
+        LicenseEntity existingLicense = existingLicenseOpt.get();
+        String oldValues = existingLicense.toString();
+
+        // Mise à jour des champs modifiables
+        if (updatedLicense.getLicenseName() != null) {
+            existingLicense.setLicenseName(updatedLicense.getLicenseName());
+        }
+        if (updatedLicense.getLicenseType() != null) {
+            existingLicense.setLicenseType(updatedLicense.getLicenseType());
+        }
+        if (updatedLicense.getProductName() != null) {
+            existingLicense.setProductName(updatedLicense.getProductName());
+        }
+        if (updatedLicense.getProductVersion() != null) {
+            existingLicense.setProductVersion(updatedLicense.getProductVersion());
+        }
+        if (updatedLicense.getCustomerName() != null) {
+            existingLicense.setCustomerName(updatedLicense.getCustomerName());
+        }
+        if (updatedLicense.getCustomerEmail() != null) {
+            existingLicense.setCustomerEmail(updatedLicense.getCustomerEmail());
+        }
+        if (updatedLicense.getOrganization() != null) {
+            existingLicense.setOrganization(updatedLicense.getOrganization());
+        }
+        if (updatedLicense.getMaxUsers() != null) {
+            existingLicense.setMaxUsers(updatedLicense.getMaxUsers());
+        }
+        if (updatedLicense.getMaxProjects() != null) {
+            existingLicense.setMaxProjects(updatedLicense.getMaxProjects());
+        }
+        if (updatedLicense.getFeatures() != null) {
+            existingLicense.setFeatures(updatedLicense.getFeatures());
+        }
+        if (updatedLicense.getExpiryDate() != null) {
+            existingLicense.setExpiryDate(updatedLicense.getExpiryDate());
+        }
+        if (updatedLicense.getIsActive() != null) {
+            existingLicense.setIsActive(updatedLicense.getIsActive());
+        }
+        if (updatedLicense.getMaxUsage() != null) {
+            existingLicense.setMaxUsage(updatedLicense.getMaxUsage());
+        }
+        if (updatedLicense.getIpRestrictions() != null) {
+            existingLicense.setIpRestrictions(updatedLicense.getIpRestrictions());
+        }
+        if (updatedLicense.getDomainRestrictions() != null) {
+            existingLicense.setDomainRestrictions(updatedLicense.getDomainRestrictions());
+        }
+        if (updatedLicense.getNotes() != null) {
+            existingLicense.setNotes(updatedLicense.getNotes());
         }
 
-        // Mettre à jour les champs
-        license.setLicenseKey(updatedLicense.getLicenseKey());
-        license.setClientName(updatedLicense.getClientName());
-        license.setLicenseType(updatedLicense.getLicenseType());
-        license.setMaxUsers(updatedLicense.getMaxUsers());
-        license.setFeatures(updatedLicense.getFeatures());
-        license.setStartDate(updatedLicense.getStartDate());
-        license.setEndDate(updatedLicense.getEndDate());
-        license.setDaysBeforeExpiryAlert(updatedLicense.getDaysBeforeExpiryAlert());
-        license.setUpdatedAt(LocalDateTime.now());
+        existingLicense.setUpdatedAt(new Date());
+        existingLicense.setUpdatedBy(getCurrentUserId());
 
-        return licenseRepository.save(license);
+        LicenseEntity savedLicense = licenseRepository.save(existingLicense);
+
+        // Audit log
+        auditLogService.logAction(getCurrentUserId(),
+                "UPDATE_LICENSE", "licenses", savedLicense.getId(), oldValues,
+                "License updated: " + savedLicense.getLicenseName());
+
+        return savedLicense;
     }
 
     // Suppression d'une licence
     public void deleteLicense(String licenseId) {
-        if (!licenseRepository.existsById(licenseId)) {
-            throw new RuntimeException("Licence non trouvée");
+        Optional<LicenseEntity> licenseOpt = licenseRepository.findById(licenseId);
+        if (!licenseOpt.isPresent()) {
+            throw new RuntimeException("Licence non trouvée avec l'ID: " + licenseId);
         }
-        
-        // Vérifier s'il y a des projets associés
-        // TODO: Ajouter la vérification des dépendances
-        
+
+        LicenseEntity license = licenseOpt.get();
+        String oldValues = license.toString();
+
         licenseRepository.deleteById(licenseId);
+
+        // Audit log
+        auditLogService.logAction(getCurrentUserId(),
+                "DELETE_LICENSE", "licenses", licenseId, oldValues,
+                "License deleted: " + license.getLicenseName());
     }
 
     // Récupération d'une licence par ID
@@ -87,24 +153,127 @@ public class LicenseService {
         return licenseRepository.findById(licenseId);
     }
 
-    // Récupération d'une licence par clé
-    public Optional<LicenseEntity> getLicenseByKey(String licenseKey) {
-        return licenseRepository.findByLicenseKey(licenseKey);
-    }
-
     // Récupération de toutes les licences
     public List<LicenseEntity> getAllLicenses() {
         return licenseRepository.findAll();
     }
 
-    // Récupération des licences actives
-    public List<LicenseEntity> getActiveLicenses() {
-        return licenseRepository.findByStatusOrderByEndDateAsc("ACTIVE");
+    // Validation d'une licence par clé
+    public LicenseValidationResult validateLicense(String licenseKey) {
+        Optional<LicenseEntity> licenseOpt = licenseRepository.findByLicenseKey(licenseKey);
+        
+        if (!licenseOpt.isPresent()) {
+            return new LicenseValidationResult(false, "Licence non trouvée", null);
+        }
+
+        LicenseEntity license = licenseOpt.get();
+        
+        // Mettre à jour la dernière validation
+        license.setLastValidation(new Date());
+        
+        // Vérifications de validité
+        if (!license.getIsActive()) {
+            license.setValidationStatus("SUSPENDED");
+            licenseRepository.save(license);
+            return new LicenseValidationResult(false, "Licence suspendue", license);
+        }
+
+        if (license.isExpired()) {
+            license.setValidationStatus("EXPIRED");
+            licenseRepository.save(license);
+            return new LicenseValidationResult(false, "Licence expirée", license);
+        }
+
+        if (!license.hasUsageLeft()) {
+            license.setValidationStatus("USAGE_EXCEEDED");
+            licenseRepository.save(license);
+            return new LicenseValidationResult(false, "Limite d'utilisation dépassée", license);
+        }
+
+        // Licence valide
+        license.setValidationStatus("VALID");
+        license.incrementUsage();
+        licenseRepository.save(license);
+
+        // Audit log
+        auditLogService.logAction("SYSTEM",
+                "VALIDATE_LICENSE", "licenses", license.getId(), null,
+                "License validated: " + license.getLicenseName());
+
+        return new LicenseValidationResult(true, "Licence valide", license);
     }
 
-    // Récupération des licences par statut
-    public List<LicenseEntity> getLicensesByStatus(String status) {
-        return licenseRepository.findByStatus(status);
+    // Activation d'une licence
+    public LicenseEntity activateLicense(String licenseKey) {
+        Optional<LicenseEntity> licenseOpt = licenseRepository.findByLicenseKey(licenseKey);
+        
+        if (!licenseOpt.isPresent()) {
+            throw new RuntimeException("Licence non trouvée avec la clé: " + licenseKey);
+        }
+
+        LicenseEntity license = licenseOpt.get();
+        
+        if (license.getActivationDate() != null) {
+            throw new RuntimeException("Licence déjà activée");
+        }
+
+        license.setActivationDate(new Date());
+        license.setIsActive(true);
+        license.setValidationStatus("VALID");
+        license.setUpdatedAt(new Date());
+
+        LicenseEntity savedLicense = licenseRepository.save(license);
+
+        // Audit log
+        auditLogService.logAction(getCurrentUserId(),
+                "ACTIVATE_LICENSE", "licenses", savedLicense.getId(), null,
+                "License activated: " + savedLicense.getLicenseName());
+
+        return savedLicense;
+    }
+
+    // Désactivation d'une licence
+    public LicenseEntity deactivateLicense(String licenseId) {
+        Optional<LicenseEntity> licenseOpt = licenseRepository.findById(licenseId);
+        
+        if (!licenseOpt.isPresent()) {
+            throw new RuntimeException("Licence non trouvée avec l'ID: " + licenseId);
+        }
+
+        LicenseEntity license = licenseOpt.get();
+        license.setIsActive(false);
+        license.setValidationStatus("SUSPENDED");
+        license.setUpdatedAt(new Date());
+
+        LicenseEntity savedLicense = licenseRepository.save(license);
+
+        // Audit log
+        auditLogService.logAction(getCurrentUserId(),
+                "DEACTIVATE_LICENSE", "licenses", savedLicense.getId(), null,
+                "License deactivated: " + savedLicense.getLicenseName());
+
+        return savedLicense;
+    }
+
+    // Recherche de licences
+    public List<LicenseEntity> searchLicenses(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAllLicenses();
+        }
+
+        List<LicenseEntity> results = new ArrayList<>();
+        
+        // Recherche par nom de licence
+        results.addAll(licenseRepository.findByLicenseNameContainingIgnoreCase(searchTerm));
+        
+        // Recherche par nom de client
+        results.addAll(licenseRepository.findByCustomerNameContainingIgnoreCase(searchTerm));
+        
+        // Recherche par organisation
+        results.addAll(licenseRepository.findByOrganizationContainingIgnoreCase(searchTerm));
+        
+        // Supprimer les doublons
+        return results.stream().distinct().collect(Collectors.toList());
     }
 
     // Récupération des licences par type
@@ -112,169 +281,150 @@ public class LicenseService {
         return licenseRepository.findByLicenseType(licenseType);
     }
 
-    // Recherche de licences par nom de client
-    public List<LicenseEntity> searchLicensesByClient(String clientName) {
-        return licenseRepository.findByClientNameContainingIgnoreCase(clientName);
+    // Récupération des licences actives
+    public List<LicenseEntity> getActiveLicenses() {
+        return licenseRepository.findByIsActive(true);
     }
 
     // Récupération des licences expirées
     public List<LicenseEntity> getExpiredLicenses() {
-        return licenseRepository.findExpiredLicenses(LocalDateTime.now());
+        return licenseRepository.findExpiredLicenses(new Date());
     }
 
     // Récupération des licences qui expirent bientôt
     public List<LicenseEntity> getLicensesExpiringSoon(int days) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime futureDate = now.plusDays(days);
-        return licenseRepository.findLicensesExpiringSoon(now, futureDate);
-    }
-
-    // Récupération des licences nécessitant une alerte
-    public List<LicenseEntity> getLicensesNeedingAlert() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime futureDate = now.plusDays(30); // Par défaut 30 jours
-        return licenseRepository.findLicensesNeedingAlert(now, futureDate);
-    }
-
-    // Validation d'une licence
-    public boolean validateLicense(String licenseKey) {
-        Optional<LicenseEntity> license = licenseRepository.findByLicenseKey(licenseKey);
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        Date futureDate = cal.getTime();
         
-        if (license.isEmpty()) {
-            return false;
-        }
-
-        LicenseEntity licenseEntity = license.get();
-        
-        // Vérifier le statut
-        if (!"ACTIVE".equals(licenseEntity.getStatus())) {
-            return false;
-        }
-
-        // Vérifier l'expiration
-        if (licenseEntity.isExpired()) {
-            // Marquer comme expirée
-            licenseEntity.setStatus("EXPIRED");
-            licenseRepository.save(licenseEntity);
-            return false;
-        }
-
-        // Mettre à jour la dernière vérification
-        licenseEntity.setLastCheck(LocalDateTime.now());
-        licenseRepository.save(licenseEntity);
-
-        return true;
-    }
-
-    // Changement de statut d'une licence
-    public LicenseEntity changeLicenseStatus(String licenseId, String newStatus) {
-        Optional<LicenseEntity> licenseOpt = licenseRepository.findById(licenseId);
-        
-        if (licenseOpt.isEmpty()) {
-            throw new RuntimeException("Licence non trouvée");
-        }
-
-        LicenseEntity license = licenseOpt.get();
-        String oldStatus = license.getStatus();
-        license.setStatus(newStatus);
-        license.setUpdatedAt(LocalDateTime.now());
-        
-        LicenseEntity updatedLicense = licenseRepository.save(license);
-        
-        // Log de l'audit
-        auditLogService.logAction(
-            null, // TODO: récupérer l'utilisateur actuel
-            null,
-            "STATUS_CHANGE",
-            "LICENSE",
-            licenseId,
-            "License status changed from " + oldStatus + " to " + newStatus,
-            null,
-            null,
-            null
-        );
-        
-        return updatedLicense;
-    }
-
-    // Mise à jour du nombre d'utilisateurs actuels
-    public LicenseEntity updateCurrentUsers(String licenseId, int currentUsers) {
-        Optional<LicenseEntity> licenseOpt = licenseRepository.findById(licenseId);
-        
-        if (licenseOpt.isEmpty()) {
-            throw new RuntimeException("Licence non trouvée");
-        }
-
-        LicenseEntity license = licenseOpt.get();
-        
-        if (currentUsers > license.getMaxUsers()) {
-            throw new RuntimeException("Le nombre d'utilisateurs dépasse la limite de la licence");
-        }
-        
-        license.setCurrentUsers(currentUsers);
-        license.setUpdatedAt(LocalDateTime.now());
-        
-        return licenseRepository.save(license);
-    }
-
-    // Vérification des licences et envoi d'alertes
-    public void checkLicensesAndSendAlerts() {
-        List<LicenseEntity> licensesNeedingAlert = getLicensesNeedingAlert();
-        
-        for (LicenseEntity license : licensesNeedingAlert) {
-            if (!license.getAlertSent()) {
-                // Envoyer l'alerte (email, notification, etc.)
-                sendExpiryAlert(license);
-                
-                // Marquer l'alerte comme envoyée
-                license.setAlertSent(true);
-                licenseRepository.save(license);
-            }
-        }
-    }
-
-    // Récupération des licences proches de la limite d'utilisateurs
-    public List<LicenseEntity> getLicensesNearUserLimit() {
-        return licenseRepository.findLicensesNearUserLimit();
+        return licenseRepository.findLicensesExpiringBetween(now, futureDate);
     }
 
     // Statistiques des licences
-    public long countLicensesByStatus(String status) {
-        return licenseRepository.countByStatus(status);
-    }
-
-    public long countLicensesByType(String licenseType) {
-        return licenseRepository.countByLicenseType(licenseType);
+    public LicenseStatistics getLicenseStatistics() {
+        LicenseStatistics stats = new LicenseStatistics();
+        
+        stats.setTotalLicenses(licenseRepository.count());
+        stats.setActiveLicenses(licenseRepository.countByIsActive(true));
+        stats.setInactiveLicenses(licenseRepository.countByIsActive(false));
+        stats.setTrialLicenses(licenseRepository.countByIsTrial(true));
+        stats.setExpiredLicenses(licenseRepository.countExpiredLicenses(new Date()));
+        
+        // Compter par type
+        Map<String, Long> byType = new HashMap<>();
+        byType.put("STANDARD", licenseRepository.countByLicenseType("STANDARD"));
+        byType.put("PREMIUM", licenseRepository.countByLicenseType("PREMIUM"));
+        byType.put("ENTERPRISE", licenseRepository.countByLicenseType("ENTERPRISE"));
+        byType.put("TRIAL", licenseRepository.countByLicenseType("TRIAL"));
+        stats.setLicensesByType(byType);
+        
+        return stats;
     }
 
     // Génération d'une clé de licence unique
     private String generateLicenseKey() {
-        return "NEO-TM-" + UUID.randomUUID().toString().toUpperCase().replace("-", "").substring(0, 16);
-    }
-
-    // Envoi d'alerte d'expiration (à implémenter selon les besoins)
-    private void sendExpiryAlert(LicenseEntity license) {
-        // TODO: Implémenter l'envoi d'email ou de notification
-        System.out.println("Alerte: La licence " + license.getLicenseKey() + 
-                          " expire le " + license.getEndDate() + 
-                          " (dans " + license.getDaysUntilExpiry() + " jours)");
-    }
-
-    // Renouvellement d'une licence
-    public LicenseEntity renewLicense(String licenseId, LocalDateTime newEndDate) {
-        Optional<LicenseEntity> licenseOpt = licenseRepository.findById(licenseId);
+        String key;
+        do {
+            key = generateRandomKey();
+        } while (licenseRepository.findByLicenseKey(key).isPresent());
         
-        if (licenseOpt.isEmpty()) {
-            throw new RuntimeException("Licence non trouvée");
+        return key;
+    }
+
+    private String generateRandomKey() {
+        StringBuilder sb = new StringBuilder();
+        
+        // Format: XXXX-XXXX-XXXX-XXXX
+        for (int i = 0; i < 4; i++) {
+            if (i > 0) sb.append("-");
+            for (int j = 0; j < 4; j++) {
+                sb.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+            }
+        }
+        
+        return sb.toString();
+    }
+
+    // Validation des données de création
+    private void validateLicenseCreation(LicenseEntity license) {
+        if (license.getLicenseName() == null || license.getLicenseName().trim().isEmpty()) {
+            throw new RuntimeException("Le nom de la licence est obligatoire");
+        }
+        
+        if (license.getLicenseType() == null || license.getLicenseType().trim().isEmpty()) {
+            throw new RuntimeException("Le type de licence est obligatoire");
+        }
+        
+        if (license.getCustomerName() == null || license.getCustomerName().trim().isEmpty()) {
+            throw new RuntimeException("Le nom du client est obligatoire");
+        }
+        
+        if (license.getCustomerEmail() == null || license.getCustomerEmail().trim().isEmpty()) {
+            throw new RuntimeException("L'email du client est obligatoire");
+        }
+        
+        if (license.getExpiryDate() != null && license.getExpiryDate().before(new Date())) {
+            throw new RuntimeException("La date d'expiration ne peut pas être dans le passé");
+        }
+    }
+
+    // Récupération de l'utilisateur actuel (à implémenter selon le système d'authentification)
+    private String getCurrentUserId() {
+        // TODO: Implémenter la récupération de l'utilisateur actuel
+        return "ADMIN"; // Valeur par défaut pour les tests
+    }
+
+    // Classes internes pour les résultats
+    public static class LicenseValidationResult {
+        private boolean valid;
+        private String message;
+        private LicenseEntity license;
+
+        public LicenseValidationResult(boolean valid, String message, LicenseEntity license) {
+            this.valid = valid;
+            this.message = message;
+            this.license = license;
         }
 
-        LicenseEntity license = licenseOpt.get();
-        license.setEndDate(newEndDate);
-        license.setStatus("ACTIVE");
-        license.setAlertSent(false);
-        license.setUpdatedAt(LocalDateTime.now());
+        // Getters et setters
+        public boolean isValid() { return valid; }
+        public void setValid(boolean valid) { this.valid = valid; }
         
-        return licenseRepository.save(license);
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        
+        public LicenseEntity getLicense() { return license; }
+        public void setLicense(LicenseEntity license) { this.license = license; }
+    }
+
+    public static class LicenseStatistics {
+        private long totalLicenses;
+        private long activeLicenses;
+        private long inactiveLicenses;
+        private long trialLicenses;
+        private long expiredLicenses;
+        private Map<String, Long> licensesByType;
+
+        // Getters et setters
+        public long getTotalLicenses() { return totalLicenses; }
+        public void setTotalLicenses(long totalLicenses) { this.totalLicenses = totalLicenses; }
+        
+        public long getActiveLicenses() { return activeLicenses; }
+        public void setActiveLicenses(long activeLicenses) { this.activeLicenses = activeLicenses; }
+        
+        public long getInactiveLicenses() { return inactiveLicenses; }
+        public void setInactiveLicenses(long inactiveLicenses) { this.inactiveLicenses = inactiveLicenses; }
+        
+        public long getTrialLicenses() { return trialLicenses; }
+        public void setTrialLicenses(long trialLicenses) { this.trialLicenses = trialLicenses; }
+        
+        public long getExpiredLicenses() { return expiredLicenses; }
+        public void setExpiredLicenses(long expiredLicenses) { this.expiredLicenses = expiredLicenses; }
+        
+        public Map<String, Long> getLicensesByType() { return licensesByType; }
+        public void setLicensesByType(Map<String, Long> licensesByType) { this.licensesByType = licensesByType; }
     }
 }
 

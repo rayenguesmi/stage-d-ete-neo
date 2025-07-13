@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document(collection = "audit_logs")
 public class AuditLogEntity {
@@ -37,7 +37,7 @@ public class AuditLogEntity {
     private String userAgent;
 
     @Field("timestamp")
-    private LocalDateTime timestamp;
+    private Date timestamp;
 
     @Field("project_id")
     private String projectId;
@@ -53,7 +53,7 @@ public class AuditLogEntity {
 
     // Constructeurs
     public AuditLogEntity() {
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = new Date();
         this.success = true;
     }
 
@@ -160,11 +160,11 @@ public class AuditLogEntity {
         this.userAgent = userAgent;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,24 +19,21 @@ public class UserService {
     @Autowired
     private AuditLogService auditLogService;
 
-    // Création d'utilisateur
     public UserEntity createUser(UserEntity user) {
         validateUserCreation(user);
 
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(new Date());
+        user.setUpdatedAt(new Date());
 
         UserEntity savedUser = userRepository.save(user);
 
-        // Log de l'audit
-        auditLogService.logAction(getCurrentUserId(), getCurrentUsername(),
-                "CREATE", "USER", savedUser.getId(),
+        auditLogService.logAction(getCurrentUserId(),
+                "CREATE_USER", "users", savedUser.getId(), null,
                 "User created: " + savedUser.getUsername());
 
         return savedUser;
     }
 
-    // Mise à jour d'utilisateur
     public UserEntity updateUser(String userId, UserEntity updatedUser) {
         Optional<UserEntity> existingUserOpt = userRepository.findById(userId);
         if (!existingUserOpt.isPresent()) {
@@ -45,10 +42,8 @@ public class UserService {
 
         UserEntity existingUser = existingUserOpt.get();
 
-        // Vérification des permissions
         validateUserUpdate(existingUser, updatedUser);
 
-        // Mise à jour des champs
         if (updatedUser.getFirstName() != null) {
             existingUser.setFirstName(updatedUser.getFirstName());
         }
@@ -68,19 +63,17 @@ public class UserService {
             existingUser.setIsActive(updatedUser.getIsActive());
         }
 
-        existingUser.setUpdatedAt(LocalDateTime.now());
+        existingUser.setUpdatedAt(new Date());
 
         UserEntity savedUser = userRepository.save(existingUser);
 
-        // Log de l'audit
-        auditLogService.logAction(getCurrentUserId(), getCurrentUsername(),
-                "UPDATE", "USER", savedUser.getId(),
-                "User updated: " + savedUser.getUsername());
+        auditLogService.logAction(getCurrentUserId(),
+                "UPDATE_USER", "users", savedUser.getId(), 
+                existingUser.toString(), "User updated: " + savedUser.getUsername());
 
         return savedUser;
     }
 
-    // Suppression d'utilisateur
     public void deleteUser(String userId) {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
@@ -89,7 +82,6 @@ public class UserService {
 
         UserEntity user = userOpt.get();
 
-        // Vérification qu'on ne supprime pas le dernier administrateur
         if (user.getRoles().contains("ADMIN_GENERAL")) {
             long adminCount = userRepository.countAdministrators();
             if (adminCount <= 1) {
@@ -99,78 +91,64 @@ public class UserService {
 
         userRepository.deleteById(userId);
 
-        // Log de l'audit
-        auditLogService.logAction(getCurrentUserId(), getCurrentUsername(),
-                "DELETE", "USER", userId,
-                "User deleted: " + user.getUsername());
+        auditLogService.logAction(getCurrentUserId(),
+                "DELETE_USER", "users", userId,
+                user.toString(), "User deleted: " + user.getUsername());
     }
 
-    // Récupération d'utilisateur par ID
     public Optional<UserEntity> getUserById(String userId) {
         return userRepository.findById(userId);
     }
 
-    // Récupération d'utilisateur par nom d'utilisateur
     public Optional<UserEntity> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    // Récupération d'utilisateur par email
     public Optional<UserEntity> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    // Récupération d'utilisateur par Keycloak ID
     public Optional<UserEntity> getUserByKeycloakId(String keycloakId) {
         return userRepository.findByKeycloakId(keycloakId);
     }
 
-    // Récupération de tous les utilisateurs
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Récupération des utilisateurs actifs
     public List<UserEntity> getActiveUsers() {
         return userRepository.findByIsActive(true);
     }
 
-    // Récupération des utilisateurs par rôle
     public List<UserEntity> getUsersByRole(String role) {
         return userRepository.findByRole(role);
     }
 
-    // Récupération des utilisateurs par projet
     public List<UserEntity> getUsersByProject(String projectId) {
         return userRepository.findByProject(projectId);
     }
 
-    // Récupération des administrateurs
     public List<UserEntity> getAdministrators() {
         return userRepository.findAllAdministrators();
     }
 
-    // Récupération des chefs de projet pour un projet
     public List<UserEntity> getProjectManagers(String projectId) {
         return userRepository.findProjectManagers(projectId);
     }
 
-    // Récupération des exécutants pour un projet
     public List<UserEntity> getExecutors(String projectId) {
         return userRepository.findExecutors(projectId);
     }
 
-    // Mise à jour de la dernière connexion
     public void updateLastLogin(String userId) {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             UserEntity user = userOpt.get();
-            user.setLastLogin(LocalDateTime.now());
+            user.setLastLogin(new Date());
             userRepository.save(user);
         }
     }
 
-    // Activation/Désactivation d'utilisateur
     public UserEntity toggleUserStatus(String userId) {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
@@ -179,7 +157,7 @@ public class UserService {
 
         UserEntity user = userOpt.get();
         user.setIsActive(!user.getIsActive());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(new Date());
 
         UserEntity savedUser = userRepository.save(user);
 
@@ -191,39 +169,30 @@ public class UserService {
         return savedUser;
     }
 
-    // Validation de la création d'utilisateur
     private void validateUserCreation(UserEntity user) {
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new RuntimeException("Le nom d'utilisateur est obligatoire");
         }
-
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
             throw new RuntimeException("L'email est obligatoire");
         }
-
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Un utilisateur avec ce nom d'utilisateur existe déjà");
         }
-
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
-
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             throw new RuntimeException("Au moins un rôle doit être assigné");
         }
     }
 
-    // Validation de la mise à jour d'utilisateur
     private void validateUserUpdate(UserEntity existingUser, UserEntity updatedUser) {
-        // Vérification des permissions pour modifier les rôles
         if (updatedUser.getRoles() != null && !updatedUser.getRoles().equals(existingUser.getRoles())) {
             if (!hasAdminPermission()) {
                 throw new RuntimeException("Seuls les administrateurs peuvent modifier les rôles");
             }
         }
-
-        // Vérification de l'unicité de l'email si modifié
         if (updatedUser.getEmail() != null && !updatedUser.getEmail().equals(existingUser.getEmail())) {
             if (userRepository.existsByEmail(updatedUser.getEmail())) {
                 throw new RuntimeException("Un utilisateur avec cet email existe déjà");
@@ -231,7 +200,6 @@ public class UserService {
         }
     }
 
-    // Vérification des permissions d'administration
     private boolean hasAdminPermission() {
         String currentUserId = getCurrentUserId();
         if (currentUserId == null) return false;
@@ -243,10 +211,7 @@ public class UserService {
         return currentUser.getRoles().contains("ADMIN_GENERAL");
     }
 
-    // Récupération de l'ID de l'utilisateur actuel
     private String getCurrentUserId() {
-        // À implémenter selon votre système d'authentification
-        // Exemple avec Spring Security et Keycloak
         try {
             return SecurityContextHolder.getContext().getAuthentication().getName();
         } catch (Exception e) {
@@ -254,9 +219,7 @@ public class UserService {
         }
     }
 
-    // Récupération du nom d'utilisateur actuel
     private String getCurrentUsername() {
-        // À implémenter selon votre système d'authentification
         try {
             String userId = getCurrentUserId();
             Optional<UserEntity> userOpt = userRepository.findById(userId);
@@ -266,4 +229,3 @@ public class UserService {
         }
     }
 }
-
