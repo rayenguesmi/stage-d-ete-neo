@@ -12,7 +12,7 @@ import { GestionUtilisateurComponent } from './gestion-utilisateur/gestion-utili
 import { HomeComponent } from './home/home.component';
 import { LandingComponent } from './landing/landing.component';
 const routes: Routes = [
-  //{ path: 'home', component: AppComponent, canActivate: [AuthGuard] },
+  { path: '', component: HomeComponent }, // Home page as default
   {
     path: '',
     component: LandingComponent,
@@ -28,7 +28,7 @@ const routes: Routes = [
       { path: 'audit-suivi', component: AuditSuiviComponent },
     ],
   },
-  { path: '**', redirectTo: 'home' }, // Route par défaut si aucune autre route ne correspond
+  { path: '**', redirectTo: '' }, // Redirect unknown routes to home
 ];
 
 @NgModule({

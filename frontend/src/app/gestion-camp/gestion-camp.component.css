@@ -384,3 +384,97 @@ h2 {
   list-style-type: none;
   padding-left: 0;
 }
+
+/* Card container for the table */
+.table-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(25, 118, 210, 0.08);
+  padding: 0;
+  margin: 32px 0 0 0;
+  overflow-x: auto;
+}
+
+/* Fancy Table Styles */
+.fancy-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  min-width: 900px;
+}
+
+.fancy-table th,
+.fancy-table td {
+  padding: 18px 28px;
+  text-align: left;
+  font-size: 1.07em;
+  border: none;
+}
+
+.fancy-table th {
+  color: #1976d2;
+  background: #f7fafd;
+  font-weight: 700;
+  border-bottom: 2px solid #eaf4ff;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
+  /* Add subtle shadow for floating effect */
+  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.04);
+}
+
+.fancy-table th .sort-btn {
+  background: none;
+  border: none;
+  color: #7a8ca5;
+  margin-left: 6px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: color 0.2s;
+  vertical-align: middle;
+  padding: 0;
+}
+
+.fancy-table th .sort-btn.active,
+.fancy-table th .sort-btn:hover {
+  color: #1976d2;
+}
+
+.fancy-table tr {
+  background: #fff;
+  transition: background 0.2s;
+}
+
+.fancy-table tr:hover {
+  background: #eaf4ff;
+}
+
+.fancy-table td {
+  color: #222;
+  border-bottom: 1.5px solid #f0f4fa;
+  vertical-align: middle;
+}
+
+.fancy-table th:first-child,
+.fancy-table td:first-child {
+  border-top-left-radius: 16px;
+}
+
+.fancy-table th:last-child,
+.fancy-table td:last-child {
+  border-top-right-radius: 16px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .table-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px 0 rgba(25, 118, 210, 0.08);
+  }
+  .fancy-table th,
+  .fancy-table td {
+    padding: 12px 10px;
+    font-size: 0.98em;
+  }
+}
