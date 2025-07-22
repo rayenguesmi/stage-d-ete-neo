@@ -9,26 +9,64 @@ import { GestionDocComponent } from './gestion-doc/gestion-doc.component';
 import { GestionExecComponent } from './gestion-exec/gestion-exec.component';
 import { GestionLicencesComponent } from './gestion-licences/gestion-licences.component';
 import { GestionUtilisateurComponent } from './gestion-utilisateur/gestion-utilisateur.component';
+import { GestionRolesComponent } from './gestion-roles/gestion-roles.component';
 import { HomeComponent } from './home/home.component';
 import { LandingComponent } from './landing/landing.component';
+
 const routes: Routes = [
-  { path: '', component: HomeComponent }, // Home page as default
   {
     path: '',
     component: LandingComponent,
     canActivate: [AuthGuard],
     children: [
-      { path: 'home', component: HomeComponent },
-      { path: 'gestionnaire-de-doc', component: GestionDocComponent },
-      { path: 'g-de-campagne', component: GestionCampComponent },
-      { path: 'g-dexecution', component: GestionExecComponent },
-      { path: 'administration', component: AdministrationComponent },
-      { path: 'gestion-licences', component: GestionLicencesComponent },
-      { path: 'gestion-utilisateur', component: GestionUtilisateurComponent },
-      { path: 'audit-suivi', component: AuditSuiviComponent },
+      { 
+        path: 'home', 
+        component: HomeComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'gestionnaire-de-doc', 
+        component: GestionDocComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'g-de-campagne', 
+        component: GestionCampComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'g-dexecution', 
+        component: GestionExecComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'administration', 
+        component: AdministrationComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'gestion-licences', 
+        component: GestionLicencesComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'gestion-utilisateur', 
+        component: GestionUtilisateurComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'gestion-roles', 
+        component: GestionRolesComponent,
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'audit-suivi', 
+        component: AuditSuiviComponent,
+        canActivate: [AuthGuard]
+      }
     ],
   },
-  { path: '**', redirectTo: '' }, // Redirect unknown routes to home
+ 
 ];
 
 @NgModule({
@@ -37,3 +75,6 @@ const routes: Routes = [
   exports: [RouterModule],
 })
 export class AppRoutingModule {}
+
+
+

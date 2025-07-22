@@ -28,64 +28,155 @@
         <img src="assets/Logo_Neo_TM.PNG" alt="Logo Neo-TM" class="logo" />
       </div>
 
-      <nav>
-        <ul class="menu-list">
-          <li>
-            <a
-              routerLink="/home"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-            >
-              <i class="fa fa-home"></i> Tableau de bord
-            </a>
-          </li>
-          <li>
-            <a routerLink="/gestionnaire-de-doc" routerLinkActive="active">
-              <i class="fa fa-file"></i> Gestionnaire de documents
-            </a>
-          </li>
-          <li>
-            <a routerLink="/g-de-campagne" routerLinkActive="active">
-              <i class="fa fa-tasks"></i> Gestionnaire de campagnes
-            </a>
-          </li>
-          <li>
-            <a routerLink="/g-dexecution" routerLinkActive="active">
-              <i class="fa fa-calendar-check"></i> Gestionnaire d'exécutions
-            </a>
-          </li>
-          <li class="submenu">
-            <a
-              routerLink="javascript:void(0)"
-              (click)="toggleSubMenu('administration')"
-            >
-              <i class="fa fa-user-cog"></i> Administration
-            </a>
-            <ul *ngIf="subMenus['administration']" class="submenu-list">
-              <li>
-                <a routerLink="/gestion-utilisateur" routerLinkActive="active"
-                  ><i class="fa fa-users"></i> Gestion des utilisateurs</a
-                >
-              </li>
-              <li>
-                <a routerLink="/gestion-licences" routerLinkActive="active"
-                  ><i class="fa fa-cogs"></i> Gestion des licences</a
-                >
-              </li>
-              <li>
-                <a routerLink="/audit-suivi" routerLinkActive="active"
-                  ><i class="fas fa-clipboard-check"></i> Audit et suivi</a
-                >
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </nav>
+      <!-- Detailed Sidebar -->
+      <div class="app-container">
+        <div class="sidebar">
+          <h2>NeoTM</h2>
+          <a href="#" [class.active]="currentRoute === '/home'" (click)="navigateTo('/home')">
+            <i class="fas fa-home icon"></i> Accueil
+          </a>
+
+          <!-- Menu déroulant Administration -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('admin')">
+              <i class="fas fa-user-shield icon"></i> Administration
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['admin']">
+              <a href="#" [class.active]="currentRoute === '/gestion-utilisateur'" (click)="navigateTo('/gestion-utilisateur')">
+                <i class="fas fa-users icon"></i> Utilisateurs
+              </a>
+              <a href="#" [class.active]="currentRoute === '/gestion-roles'" (click)="navigateTo('/gestion-roles')">
+                <i class="fas fa-user-tag icon"></i> Rôles
+              </a>
+              <a href="#" [class.active]="currentRoute === '/gestion-licences'" (click)="navigateTo('/gestion-licences')">
+                <i class="fas fa-id-card icon"></i> Licences
+              </a>
+              <a href="#" [class.active]="currentRoute === '/audit-suivi'" (click)="navigateTo('/audit-suivi')">
+                <i class="fas fa-shield-alt icon"></i> Journalisation & sécurité
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Gestion Documents -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('docs')">
+              <i class="fas fa-folder-open icon"></i> Gestion Documents
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['docs']">
+              <a href="#" [class.active]="currentRoute === '/gestionnaire-de-doc'" (click)="navigateTo('/gestionnaire-de-doc')">
+                <i class="fas fa-file-import icon"></i> Importation & versioning
+              </a>
+              <a href="#" [class.active]="currentRoute === '/annotations'" (click)="navigateTo('/annotations')">
+                <i class="fas fa-highlighter icon"></i> Annotations & validations
+              </a>
+              <a href="#" [class.active]="currentRoute === '/search'" (click)="navigateTo('/search')">
+                <i class="fas fa-search icon"></i> Recherche sémantique
+              </a>
+              <a href="#" [class.active]="currentRoute === '/archive'" (click)="navigateTo('/archive')">
+                <i class="fas fa-archive icon"></i> Archivage sécurisé
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Gestion Campagnes -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('campagnes')">
+              <i class="fas fa-tasks icon"></i> Gestion Campagnes
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['campagnes']">
+              <a href="#" [class.active]="currentRoute === '/g-de-campagne'" (click)="navigateTo('/g-de-campagne')">
+                <i class="fas fa-calendar-plus icon"></i> Création / duplication / planification
+              </a>
+              <a href="#" [class.active]="currentRoute === '/association'" (click)="navigateTo('/association')">
+                <i class="fas fa-link icon"></i> Association de documents
+              </a>
+              <a href="#" [class.active]="currentRoute === '/suivi'" (click)="navigateTo('/suivi')">
+                <i class="fas fa-clipboard-check icon"></i> Suivi d'exécution
+              </a>
+              <a href="#" [class.active]="currentRoute === '/rapports'" (click)="navigateTo('/rapports')">
+                <i class="fas fa-bell icon"></i> Rapports & alertes IA
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Gestion Exécutions -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('executions')">
+              <i class="fas fa-calendar-check icon"></i> Gestion Exécutions
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['executions']">
+              <a href="#" [class.active]="currentRoute === '/g-dexecution'" (click)="navigateTo('/g-dexecution')">
+                <i class="fas fa-history icon"></i> Historique d'exécution
+              </a>
+              <a href="#" [class.active]="currentRoute === '/stats'" (click)="navigateTo('/stats')">
+                <i class="fas fa-chart-bar icon"></i> Statistiques & évolution des erreurs
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Tableaux de bord -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('dashboard')">
+              <i class="fas fa-chart-pie icon"></i> Tableaux de bord
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['dashboard']">
+              <a href="#" [class.active]="currentRoute === '/kpi'" (click)="navigateTo('/kpi')">
+                <i class="fas fa-bullseye icon"></i> Indicateurs (KPI)
+              </a>
+              <a href="#" [class.active]="currentRoute === '/bi'" (click)="navigateTo('/bi')">
+                <i class="fas fa-chart-area icon"></i> Power BI / Grafana
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Assistant IA -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('assistant')">
+              <i class="fas fa-robot icon"></i> Assistant IA
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['assistant']">
+              <a href="#" [class.active]="currentRoute === '/chatbot'" (click)="navigateTo('/chatbot')">
+                <i class="fas fa-comments icon"></i> Chatbot RH
+              </a>
+              <a href="#" [class.active]="currentRoute === '/search-ai'" (click)="navigateTo('/search-ai')">
+                <i class="fas fa-search-plus icon"></i> Recherche intelligente
+              </a>
+              <a href="#" [class.active]="currentRoute === '/resume'" (click)="navigateTo('/resume')">
+                <i class="fas fa-stream icon"></i> Résumé / catégorisation automatique
+              </a>
+            </div>
+          </div>
+
+          <!-- Menu déroulant Connecteurs & Intégration -->
+          <div class="sidebar-group">
+            <button class="sidebar-dropdown" (click)="toggleDropdown('connecteurs')">
+              <i class="fas fa-plug icon"></i> Connecteurs & Intégration
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div class="sidebar-submenu" [class.open]="dropdowns['connecteurs']">
+              <a href="#" [class.active]="currentRoute === '/sirh'" (click)="navigateTo('/sirh')">
+                <i class="fas fa-database icon"></i> SIRH / Excel / API
+              </a>
+              <a href="#" [class.active]="currentRoute === '/monitoring'" (click)="navigateTo('/monitoring')">
+                <i class="fas fa-tachometer-alt icon"></i> Monitoring des flux
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Main Content -->
   <div class="main-container" [class.full-width]="isCollapsed">
-    <router-outlet></router-outlet>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
   </div>
 </div>

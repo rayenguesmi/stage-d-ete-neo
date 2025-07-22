@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { KeycloakService } from 'keycloak-angular';
 import { ContextService } from '../services/context.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-landing',
@@ -16,6 +17,17 @@ export class LandingComponent implements OnInit {
   error: string = ''; // Message d'erreur
   isNavbarVisible: boolean = true;
 
+  // Dropdowns for detailed sidebar
+  dropdowns: { [key: string]: boolean } = {
+    admin: false,
+    docs: false,
+    campagnes: false,
+    executions: false,
+    dashboard: false,
+    assistant: false,
+    connecteurs: false
+  };
+
   subMenus: { [key: string]: boolean } = {
     administration: false, // Sous-menu pour Administration
   };
@@ -26,7 +38,19 @@ export class LandingComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Track current route
+    this.currentRoute = this.router.url;
+    
+    // Subscribe to router events to update current route
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentRoute = event.url;
+      }
+    });
+  }
 
   logout() {
     this.keycloakService.logout();
@@ -38,6 +62,16 @@ export class LandingComponent implements OnInit {
     this.isCollapsed = !this.isCollapsed;
   }
 
+  // Navigation method for detailed sidebar
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
+  }
+
+  // Toggle dropdown for detailed sidebar
+  toggleDropdown(name: string): void {
+    this.dropdowns[name] = !this.dropdowns[name];
+  }
+
   // Méthode pour afficher le bouton hamburger
   shouldShowHamburger(): boolean {
     const routesWithNavbar = [
@@ -46,6 +80,9 @@ export class LandingComponent implements OnInit {
       '/g-dexecution',
       '/gestionnaire-de-doc',
       '/administration',
+      '/gestion-utilisateur',
+      '/gestion-licences',
+      '/audit-suivi'
     ];
     return routesWithNavbar.includes(this.router.url);
   }

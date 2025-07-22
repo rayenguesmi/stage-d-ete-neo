@@ -30,5 +30,21 @@ spring:
 
   security:
     filter-dispatcher-types: async, error, request
+    oauth2:
+      client:
+        registration:
+          backend:
+            client-id: Neo_TM_Backend
+            client-secret: Xo2z8VwYHXWUtgHBNwHJoVA9ICybNG78
+            provider: keycloak
+            scope: openid, profile, email
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: ${keycloak.url}/realms/${keycloak.realm}
+            token-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/token
+            authorization-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+            user-info-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${keycloak.url}/realms/${keycloak.realm}/protocol/openid-connect/certs
 
 

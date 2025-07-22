@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -20,8 +21,11 @@ export class AppComponent {
     connecteurs: false
   };
 
+  constructor(private router: Router) {}
+
   setCurrentView(view: string): void {
     this.currentView = view;
+    this.router.navigate([view]);
   }
 
   // Méthode pour ouvrir/fermer le menu déroulant
