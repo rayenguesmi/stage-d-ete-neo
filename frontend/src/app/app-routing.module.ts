@@ -2,8 +2,13 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './AuthGuard';
+import { AdminRoleGuard } from './admin-role.guard';
+import { UserRoleGuard } from './user-role.guard';
+import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
+import { UserLayoutComponent } from './user-layout/user-layout.component';
 import { AdministrationComponent } from './administration/administration.component';
 import { AuditSuiviComponent } from './audit-suivi/audit-suivi.component';
+import { AuditComponent } from './audit/audit.component';
 import { GestionCampComponent } from './gestion-camp/gestion-camp.component';
 import { GestionDocComponent } from './gestion-doc/gestion-doc.component';
 import { GestionExecComponent } from './gestion-exec/gestion-exec.component';
@@ -11,62 +16,100 @@ import { GestionLicencesComponent } from './gestion-licences/gestion-licences.co
 import { GestionUtilisateurComponent } from './gestion-utilisateur/gestion-utilisateur.component';
 import { GestionRolesComponent } from './gestion-roles/gestion-roles.component';
 import { HomeComponent } from './home/home.component';
-import { LandingComponent } from './landing/landing.component';
 
 const routes: Routes = [
+  // Routes Admin avec layout Admin
   {
-    path: '',
-    component: LandingComponent,
-    canActivate: [AuthGuard],
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [AdminRoleGuard],
     children: [
       { 
-        path: 'home', 
-        component: HomeComponent,
-        canActivate: [AuthGuard]
+        path: 'dashboard', 
+        component: HomeComponent
       },
       { 
         path: 'gestionnaire-de-doc', 
-        component: GestionDocComponent,
-        canActivate: [AuthGuard]
+        component: GestionDocComponent
       },
       { 
         path: 'g-de-campagne', 
-        component: GestionCampComponent,
-        canActivate: [AuthGuard]
+        component: GestionCampComponent
       },
       { 
         path: 'g-dexecution', 
-        component: GestionExecComponent,
-        canActivate: [AuthGuard]
+        component: GestionExecComponent
       },
       { 
         path: 'administration', 
-        component: AdministrationComponent,
-        canActivate: [AuthGuard]
+        component: AdministrationComponent
       },
       { 
         path: 'gestion-licences', 
-        component: GestionLicencesComponent,
-        canActivate: [AuthGuard]
+        component: GestionLicencesComponent
       },
       { 
         path: 'gestion-utilisateur', 
-        component: GestionUtilisateurComponent,
-        canActivate: [AuthGuard]
+        component: GestionUtilisateurComponent
       },
       { 
         path: 'gestion-roles', 
-        component: GestionRolesComponent,
-        canActivate: [AuthGuard]
+        component: GestionRolesComponent
       },
       { 
         path: 'audit-suivi', 
-        component: AuditSuiviComponent,
-        canActivate: [AuthGuard]
+        component: AuditSuiviComponent
+      },
+      { 
+        path: 'audit', 
+        component: AuditComponent
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
       }
-    ],
+    ]
   },
- 
+
+  // Routes User avec layout User
+  {
+    path: 'user',
+    component: UserLayoutComponent,
+    canActivate: [UserRoleGuard],
+    children: [
+      { 
+        path: 'home', 
+        component: HomeComponent
+      },
+      { 
+        path: 'gestionnaire-de-doc', 
+        component: GestionDocComponent
+      },
+      { 
+        path: 'g-de-campagne', 
+        component: GestionCampComponent
+      },
+      {
+        path: '',
+        redirectTo: 'gestionnaire-de-doc',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
+  // Route par défaut - redirection basée sur le rôle via AuthGuard
+  {
+    path: '',
+    canActivate: [AuthGuard],
+    component: HomeComponent // Composant temporaire, la redirection se fera dans AuthGuard
+  },
+
+  // Route de fallback
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];
 
 @NgModule({
@@ -75,6 +118,4 @@ const routes: Routes = [
   exports: [RouterModule],
 })
 export class AppRoutingModule {}
-
-
 
