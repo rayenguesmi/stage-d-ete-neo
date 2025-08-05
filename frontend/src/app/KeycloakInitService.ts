@@ -15,5 +15,9 @@ export function initializeKeycloak(keycloak: KeycloakService) {
         checkLoginIframe: false,
         onLoad: 'check-sso'
       },
+    }).then((authenticated: boolean) => {
+      // The redirection logic will now be handled by AuthGuard and app.component.ts
+      return authenticated;
     });
 }
+

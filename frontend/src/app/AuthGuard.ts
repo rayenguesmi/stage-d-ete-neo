@@ -24,14 +24,32 @@ export class AuthGuard extends KeycloakAuthGuard {
   ): Promise<boolean | UrlTree> {
     if (!this.authenticated) {
       await this.keycloak.login({
-        redirectUri: window.location.origin + state.url,
+        redirectUri: window.location.origin,
       });
-    } else {
-      this.keycloak.getToken().then((token) => {
-        localStorage.setItem('token', token);
-      });
+      return false;
     }
+
+    // Si l'utilisateur est authentifié et sur la route racine, rediriger selon le rôle
+    if (state.url === '/' || state.url === '') {
+      const isAdmin = this.keycloak.isUserInRole('admin');
+      const isUser = this.keycloak.isUserInRole('proj 2');
+      
+      if (isAdmin) {
+        return this.router.createUrlTree(['/admin/dashboard']);
+      } else if (isUser) {
+        return this.router.createUrlTree(['/user/gestionnaire-de-doc']);
+      } else {
+        // Si l'utilisateur n'a aucun rôle, rediriger vers une page par défaut
+        return this.router.createUrlTree(['/user/gestionnaire-de-doc']);
+      }
+    }
+
+    // Stocker le token
+    this.keycloak.getToken().then((token) => {
+      localStorage.setItem('token', token);
+    });
 
     return this.authenticated;
   }
 }
+

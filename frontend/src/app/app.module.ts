@@ -20,6 +20,8 @@ import { AuditSuiviComponent } from './audit-suivi/audit-suivi.component';
 import { AuditComponent } from './audit/audit.component';
 import { AuthGuard } from './AuthGuard';
 import { initializeKeycloak } from './KeycloakInitService';
+import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
+import { UserLayoutComponent } from './user-layout/user-layout.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -33,7 +35,9 @@ import { initializeKeycloak } from './KeycloakInitService';
     GestionExecComponent,
     LandingComponent,
     AuditSuiviComponent,
-    AuditComponent
+    AuditComponent,
+    AdminLayoutComponent,
+    UserLayoutComponent
   ],
   imports: [
     BrowserModule,
