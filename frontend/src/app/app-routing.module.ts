@@ -4,8 +4,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './AuthGuard';
 import { AdminRoleGuard } from './admin-role.guard';
 import { UserRoleGuard } from './user-role.guard';
+import { Proj1RoleGuard } from './proj1-role.guard';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { UserLayoutComponent } from './user-layout/user-layout.component';
+import { Proj1LayoutComponent } from './proj1-layout/proj1-layout.component';
 import { AdministrationComponent } from './administration/administration.component';
 import { AuditSuiviComponent } from './audit-suivi/audit-suivi.component';
 import { AuditComponent } from './audit/audit.component';
@@ -72,11 +74,37 @@ const routes: Routes = [
     ]
   },
 
-  // Routes User avec layout User
+  // Routes User avec layout User (proj2)
   {
     path: 'user',
     component: UserLayoutComponent,
     canActivate: [UserRoleGuard],
+    children: [
+      { 
+        path: 'home', 
+        component: HomeComponent
+      },
+      { 
+        path: 'gestionnaire-de-doc', 
+        component: GestionDocComponent
+      },
+      { 
+        path: 'g-de-campagne', 
+        component: GestionCampComponent
+      },
+      {
+        path: '',
+        redirectTo: 'gestionnaire-de-doc',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
+  // Routes Proj1 avec layout Proj1
+  {
+    path: 'proj1',
+    component: Proj1LayoutComponent,
+    canActivate: [Proj1RoleGuard],
     children: [
       { 
         path: 'home', 

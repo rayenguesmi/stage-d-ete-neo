@@ -22,6 +22,7 @@ import { AuthGuard } from './AuthGuard';
 import { initializeKeycloak } from './KeycloakInitService';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { UserLayoutComponent } from './user-layout/user-layout.component';
+import { Proj1LayoutComponent } from './proj1-layout/proj1-layout.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -37,7 +38,8 @@ import { UserLayoutComponent } from './user-layout/user-layout.component';
     AuditSuiviComponent,
     AuditComponent,
     AdminLayoutComponent,
-    UserLayoutComponent
+    UserLayoutComponent,
+    Proj1LayoutComponent
   ],
   imports: [
     BrowserModule,
