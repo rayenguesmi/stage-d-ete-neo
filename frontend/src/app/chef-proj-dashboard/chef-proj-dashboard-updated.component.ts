@@ -110,7 +110,7 @@ export class ChefProjDashboardComponent implements OnInit {
   assignUserToNeolians(user: User): void {
     if (!this.isUserAssignedToNeolians(user)) {
       this.assignedUsersProjet1.push(user);
-      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neolians`, 'À l\'instant');
+      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neolians`, 'À l'instant');
       this.saveAssignmentsToStorage();
     }
   }
@@ -119,7 +119,7 @@ export class ChefProjDashboardComponent implements OnInit {
   assignUserToVaudoise(user: User): void {
     if (!this.isUserAssignedToVaudoise(user)) {
       this.assignedUsersProjet2.push(user);
-      this.addActivity("assign", `${user.firstName} ${user.lastName} a été assigné au projet Vaudoise`, "À l\"instant");
+      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Vaudoise`, 'À l'instant');
       this.saveAssignmentsToStorage();
     }
   }
@@ -129,7 +129,7 @@ export class ChefProjDashboardComponent implements OnInit {
     const index = this.assignedUsersProjet1.findIndex(u => u.id === user.id);
     if (index > -1) {
       this.assignedUsersProjet1.splice(index, 1);
-      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neolians`, 'À l\'instant');
+      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neolians`, 'À l'instant');
       this.saveAssignmentsToStorage();
     }
   }
@@ -139,7 +139,7 @@ export class ChefProjDashboardComponent implements OnInit {
     const index = this.assignedUsersProjet2.findIndex(u => u.id === user.id);
     if (index > -1) {
       this.assignedUsersProjet2.splice(index, 1);
-      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Vaudoise`, 'À l\'instant');
+      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Vaudoise`, 'À l'instant');
       this.saveAssignmentsToStorage();
     }
   }
@@ -217,7 +217,7 @@ export class ChefProjDashboardComponent implements OnInit {
   resetAllAssignments(): void {
     this.assignedUsersProjet1 = [];
     this.assignedUsersProjet2 = [];
-    this.addActivity("update", "Toutes les assignations ont été réinitialisées", "À l\"instant");
+    this.addActivity('update', 'Toutes les assignations ont été réinitialisées', 'À l'instant');
     this.saveAssignmentsToStorage();
   }
 }
