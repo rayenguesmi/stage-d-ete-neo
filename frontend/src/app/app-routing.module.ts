@@ -22,6 +22,7 @@ import { GestionRolesComponent } from './gestion-roles/gestion-roles.component';
 import { HomeComponent } from './home/home.component';
 import { ChefProjDashboardComponent } from './chef-proj-dashboard/chef-proj-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
+import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
 
 const routes: Routes = [
   // Routes Admin avec layout Admin
@@ -156,7 +157,7 @@ const routes: Routes = [
     children: [
       { 
         path: 'home', 
-        component: HomeComponent
+        component: UserDashboardComponent
       },
       { 
         path: 'gestionnaire-de-doc', 
@@ -166,9 +167,13 @@ const routes: Routes = [
         path: 'g-de-campagne', 
         component: GestionCampComponent
       },
+      { 
+        path: 'g-execution', 
+        component: GestionExecComponent
+      },
       {
         path: '',
-        redirectTo: 'gestionnaire-de-doc',
+        redirectTo: 'home',
         pathMatch: 'full'
       }
     ]
@@ -182,7 +187,7 @@ const routes: Routes = [
     children: [
       { 
         path: 'home', 
-        component: HomeComponent
+        component: UserDashboardComponent
       },
       { 
         path: 'gestionnaire-de-doc', 
@@ -192,9 +197,13 @@ const routes: Routes = [
         path: 'g-de-campagne', 
         component: GestionCampComponent
       },
+      { 
+        path: 'g-execution', 
+        component: GestionExecComponent
+      },
       {
         path: '',
-        redirectTo: 'gestionnaire-de-doc',
+        redirectTo: 'home',
         pathMatch: 'full'
       }
     ]

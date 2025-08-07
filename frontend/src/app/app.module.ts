@@ -26,6 +26,7 @@ import { Proj1LayoutComponent } from './proj1-layout/proj1-layout.component';
 import { ChefProjLayoutComponent } from './chef-proj-layout/chef-proj-layout.component';
 import { ChefProjDashboardComponent } from './chef-proj-dashboard/chef-proj-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
+import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { AssignUsersComponent } from './assign-users/assign-users.component';
     Proj1LayoutComponent,
     ChefProjLayoutComponent,
     ChefProjDashboardComponent,
-    AssignUsersComponent
+    AssignUsersComponent,
+    UserDashboardComponent
   ],
   imports: [
     BrowserModule,
