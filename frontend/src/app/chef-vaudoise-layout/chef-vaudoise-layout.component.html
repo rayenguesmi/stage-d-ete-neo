@@ -1,7 +1,7 @@
 <div class="app-container">
   <div class="sidebar">
-    <h2>NeoTM</h2>
-    <a routerLink="/chef-proj/dashboard" routerLinkActive="active" [class.active]="currentView === 'home'" (click)="setCurrentView('home')">
+    <h2>Vaudoise TM</h2>
+    <a routerLink="/chef-vaudoise/dashboard" routerLinkActive="active" [class.active]="currentView === 'home'" (click)="setCurrentView('home')">
       <i class="fas fa-home icon"></i> Tableau de Bord 
     </a>
 
@@ -12,8 +12,8 @@
         <i class="fas fa-chevron-down dropdown-arrow"></i>
       </button>
       <div class="sidebar-submenu" [class.open]="dropdowns['projets']">
-        <a routerLink="/chef-proj/projet1" routerLinkActive="active" [class.active]="currentView === 'projet1'" (click)="setCurrentView('projet1')">
-          <i class="fas fa-folder icon"></i> Neoliance
+        <a routerLink="/chef-vaudoise/vaudoise" routerLinkActive="active" [class.active]="currentView === 'vaudoise'" (click)="setCurrentView('vaudoise')">
+          <i class="fas fa-folder icon"></i> Vaudoise
         </a>
       </div>
     </div>
@@ -25,10 +25,10 @@
         <i class="fas fa-chevron-down dropdown-arrow"></i>
       </button>
       <div class="sidebar-submenu" [class.open]="dropdowns['assignation']">
-        <a routerLink="/chef-proj/assign-projet1" routerLinkActive="active" [class.active]="currentView === 'assign-projet1'" (click)="setCurrentView('assign-projet1')">
-          <i class="fas fa-user-plus icon"></i> Assigner au Neoliance
+        <a routerLink="/chef-vaudoise/assign-vaudoise" routerLinkActive="active" [class.active]="currentView === 'assign-vaudoise'" (click)="setCurrentView('assign-vaudoise')">
+          <i class="fas fa-user-plus icon"></i> Assigner au Vaudoise
         </a>
-        <a routerLink="/chef-proj/view-assignments" routerLinkActive="active" [class.active]="currentView === 'view-assignments'" (click)="setCurrentView('view-assignments')">
+        <a routerLink="/chef-vaudoise/view-assignments" routerLinkActive="active" [class.active]="currentView === 'view-assignments'" (click)="setCurrentView('view-assignments')">
           <i class="fas fa-list-ul icon"></i> Voir les Assignations
         </a>
       </div>
@@ -41,8 +41,8 @@
         <i class="fas fa-chevron-down dropdown-arrow"></i>
       </button>
       <div class="sidebar-submenu" [class.open]="dropdowns['equipes']">
-        <a routerLink="/chef-proj/equipe-projet1" routerLinkActive="active" [class.active]="currentView === 'equipe-projet1'" (click)="setCurrentView('equipe-projet1')">
-          <i class="fas fa-users icon"></i> Équipe Neoliance
+        <a routerLink="/chef-vaudoise/equipe-vaudoise" routerLinkActive="active" [class.active]="currentView === 'equipe-vaudoise'" (click)="setCurrentView('equipe-vaudoise')">
+          <i class="fas fa-users icon"></i> Équipe Vaudoise
         </a>
       </div>
     </div>
@@ -54,10 +54,10 @@
         <i class="fas fa-chevron-down dropdown-arrow"></i>
       </button>
       <div class="sidebar-submenu" [class.open]="dropdowns['suivi']">
-        <a routerLink="/chef-proj/progress-projet1" routerLinkActive="active" [class.active]="currentView === 'progress-projet1'" (click)="setCurrentView('progress-projet1')">
-          <i class="fas fa-chart-bar icon"></i> Progrès Neoliance
+        <a routerLink="/chef-vaudoise/progress-vaudoise" routerLinkActive="active" [class.active]="currentView === 'progress-vaudoise'" (click)="setCurrentView('progress-vaudoise')">
+          <i class="fas fa-chart-bar icon"></i> Progrès Vaudoise
         </a>
-        <a routerLink="/chef-proj/reports" routerLinkActive="active" [class.active]="currentView === 'reports'" (click)="setCurrentView('reports')">
+        <a routerLink="/chef-vaudoise/reports" routerLinkActive="active" [class.active]="currentView === 'reports'" (click)="setCurrentView('reports')">
           <i class="fas fa-file-alt icon"></i> Rapports
         </a>
       </div>
@@ -70,13 +70,13 @@
         <i class="fas fa-chevron-down dropdown-arrow"></i>
       </button>
       <div class="sidebar-submenu" [class.open]="dropdowns['planification']">
-        <a routerLink="/chef-proj/calendar" routerLinkActive="active" [class.active]="currentView === 'calendar'" (click)="setCurrentView('calendar')">
+        <a routerLink="/chef-vaudoise/calendar" routerLinkActive="active" [class.active]="currentView === 'calendar'" (click)="setCurrentView('calendar')">
           <i class="fas fa-calendar icon"></i> Calendrier
         </a>
-        <a routerLink="/chef-proj/milestones" routerLinkActive="active" [class.active]="currentView === 'milestones'" (click)="setCurrentView('milestones')">
+        <a routerLink="/chef-vaudoise/milestones" routerLinkActive="active" [class.active]="currentView === 'milestones'" (click)="setCurrentView('milestones')">
           <i class="fas fa-flag icon"></i> Jalons
         </a>
-        <a routerLink="/chef-proj/deadlines" routerLinkActive="active" [class.active]="currentView === 'deadlines'" (click)="setCurrentView('deadlines')">
+        <a routerLink="/chef-vaudoise/deadlines" routerLinkActive="active" [class.active]="currentView === 'deadlines'" (click)="setCurrentView('deadlines')">
           <i class="fas fa-clock icon"></i> Échéances
         </a>
       </div>
@@ -90,3 +90,14 @@
   </div>
 </div>
 
+<!-- User info and logout -->
+<div class="user-info">
+  <div class="user-details">
+    <span class="user-name">{{ getUserName() }}</span>
+    <span class="user-email">{{ getUserEmail() }}</span>
+    <span class="user-role">Chef Vaudoise</span>
+  </div>
+  <button class="logout-btn" (click)="logout()">
+    <i class="fas fa-sign-out-alt"></i> Déconnexion
+  </button>
+</div>

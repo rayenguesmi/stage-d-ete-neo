@@ -1,0 +1,210 @@
+<div class="dashboard-container">
+  <div class="header">
+    <h1>Tableau de Bord - Chef Vaudoise</h1>
+    <p class="subtitle">Vue d'ensemble du projet Vaudoise</p>
+    <div class="user-welcome">
+      <span>Bienvenue, {{ getCurrentUser() }}</span>
+      <small>{{ getCurrentUserEmail() }}</small>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement des données...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !isLoading" class="error-container">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="refreshData()">Réessayer</button>
+  </div>
+
+  <!-- Dashboard content -->
+  <div *ngIf="!isLoading && !error">
+    <!-- Cartes de statistiques - Seulement Vaudoise -->
+    <div class="stats-grid">
+      <div class="stat-card vaudoise">
+        <div class="stat-icon">
+          <i class="fas fa-folder"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Vaudoise</h3>
+          <p class="stat-number">{{ assignedUsersVaudoise.length }}</p>
+          <p class="stat-label">Utilisateurs assignés</p>
+        </div>
+      </div>
+
+      <div class="stat-card progress">
+        <div class="stat-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Progrès</h3>
+          <p class="stat-number">{{ getProjectProgress() }}%</p>
+          <p class="stat-label">Avancement projet</p>
+        </div>
+      </div>
+
+      <div class="stat-card tasks">
+        <div class="stat-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Tâches Actives</h3>
+          <p class="stat-number">{{ getActiveTasksCount() }}</p>
+          <p class="stat-label">En cours</p>
+        </div>
+      </div>
+
+      <div class="stat-card available">
+        <div class="stat-icon">
+          <i class="fas fa-user-plus"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Disponibles</h3>
+          <p class="stat-number">{{ getAvailableUsersCount() }}</p>
+          <p class="stat-label">Utilisateurs disponibles</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section des utilisateurs assignés au projet Vaudoise -->
+    <div class="section">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-users"></i>
+          Équipe Vaudoise
+        </h2>
+        <button class="refresh-btn" (click)="refreshData()">
+          <i class="fas fa-sync-alt"></i>
+          Actualiser
+        </button>
+      </div>
+      
+      <div class="users-grid" *ngIf="assignedUsersVaudoise.length > 0; else noUsersAssigned">
+        <div class="user-card" *ngFor="let user of assignedUsersVaudoise">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+            <p class="user-email">{{ user.email }}</p>
+            <p class="user-username">@{{ user.username }}</p>
+            <span class="user-status" [class.active]="user.enabled">
+              {{ user.enabled ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+          <div class="user-actions">
+            <button class="btn-remove" (click)="unassignUserFromVaudoise(user)" title="Retirer du projet">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noUsersAssigned>
+        <div class="empty-state">
+          <i class="fas fa-users-slash"></i>
+          <h3>Aucun utilisateur assigné</h3>
+          <p>Aucun utilisateur n'est actuellement assigné au projet Vaudoise.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Section d'assignation des utilisateurs -->
+    <div class="section">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-user-plus"></i>
+          Gestion des Assignations - Vaudoise
+        </h2>
+      </div>
+      
+      <div class="assignment-section">
+        <div class="available-users" *ngIf="getAvailableUsers().length > 0; else noAvailableUsers">
+          <h3>Utilisateurs Disponibles</h3>
+          <div class="users-grid">
+            <div class="user-card available" *ngFor="let user of getAvailableUsers()">
+              <div class="user-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="user-info">
+                <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+                <p class="user-email">{{ user.email }}</p>
+                <span class="user-role">Utilisateur</span>
+              </div>
+              <div class="user-actions">
+                <button class="btn-assign vaudoise" (click)="assignUserToVaudoise(user)">
+                  <i class="fas fa-plus"></i>
+                  Assigner à Vaudoise
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noAvailableUsers>
+          <div class="empty-state">
+            <i class="fas fa-user-check"></i>
+            <h3>Tous les utilisateurs sont assignés</h3>
+            <p>Aucun utilisateur disponible pour assignation au projet Vaudoise.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Section des actions rapides -->
+    <div class="section">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-bolt"></i>
+          Actions Rapides
+        </h2>
+      </div>
+      
+      <div class="actions-grid">
+        <a routerLink="/chef-vaudoise/assign-vaudoise" class="action-card">
+          <div class="action-icon">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <div class="action-content">
+            <h4>Assigner Utilisateurs</h4>
+            <p>Assigner des utilisateurs au projet Vaudoise</p>
+          </div>
+        </a>
+
+        <a routerLink="/chef-vaudoise/equipe-vaudoise" class="action-card">
+          <div class="action-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="action-content">
+            <h4>Gérer Équipe</h4>
+            <p>Gérer l'équipe du projet Vaudoise</p>
+          </div>
+        </a>
+
+        <a routerLink="/chef-vaudoise/progress-vaudoise" class="action-card">
+          <div class="action-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <div class="action-content">
+            <h4>Voir Progrès</h4>
+            <p>Consulter l'avancement du projet</p>
+          </div>
+        </a>
+
+        <a routerLink="/chef-vaudoise/reports" class="action-card">
+          <div class="action-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="action-content">
+            <h4>Rapports</h4>
+            <p>Générer et consulter les rapports</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

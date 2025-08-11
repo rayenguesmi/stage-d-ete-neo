@@ -25,6 +25,8 @@ import { UserLayoutComponent } from './user-layout/user-layout.component';
 import { Proj1LayoutComponent } from './proj1-layout/proj1-layout.component';
 import { ChefProjLayoutComponent } from './chef-proj-layout/chef-proj-layout.component';
 import { ChefProjDashboardComponent } from './chef-proj-dashboard/chef-proj-dashboard.component';
+import { ChefVaudoiseLayoutComponent } from './chef-vaudoise-layout/chef-vaudoise-layout.component';
+import { ChefVaudoiseDashboardComponent } from './chef-vaudoise-dashboard/chef-vaudoise-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
 import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
 
@@ -47,8 +49,11 @@ import { UserDashboardComponent } from './user-dashboard/user-dashboard.componen
     Proj1LayoutComponent,
     ChefProjLayoutComponent,
     ChefProjDashboardComponent,
+    ChefVaudoiseLayoutComponent,
+    ChefVaudoiseDashboardComponent,
     AssignUsersComponent,
     UserDashboardComponent
+    
   ],
   imports: [
     BrowserModule,

@@ -33,11 +33,14 @@ export class AuthGuard extends KeycloakAuthGuard {
     if (state.url === '/' || state.url === '') {
       const isAdmin = this.keycloak.isUserInRole('admin');
       const isChefProj = this.keycloak.isUserInRole('chef proj');
+      const isChefVaudoise = this.keycloak.isUserInRole('chef vaudoise');
       const isUser = this.keycloak.isUserInRole('proj 2');
       const isProj1 = this.keycloak.isUserInRole('proj1');
       
       if (isAdmin) {
         return this.router.createUrlTree(['/admin/dashboard']);
+      } else if (isChefVaudoise) {
+        return this.router.createUrlTree(['/chef-vaudoise/dashboard']);
       } else if (isChefProj) {
         return this.router.createUrlTree(['/chef-proj/dashboard']);
       } else if (isUser) {

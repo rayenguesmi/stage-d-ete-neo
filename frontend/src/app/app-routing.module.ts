@@ -6,10 +6,12 @@ import { AdminRoleGuard } from './admin-role.guard';
 import { UserRoleGuard } from './user-role.guard';
 import { Proj1RoleGuard } from './proj1-role.guard';
 import { ChefProjRoleGuard } from './chef-proj-role.guard';
+import { ChefVaudoiseRoleGuard } from './chef-vaudoise-role.guard';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { UserLayoutComponent } from './user-layout/user-layout.component';
 import { Proj1LayoutComponent } from './proj1-layout/proj1-layout.component';
 import { ChefProjLayoutComponent } from './chef-proj-layout/chef-proj-layout.component';
+import { ChefVaudoiseLayoutComponent } from './chef-vaudoise-layout/chef-vaudoise-layout.component';
 import { AdministrationComponent } from './administration/administration.component';
 import { AuditSuiviComponent } from './audit-suivi/audit-suivi.component';
 import { AuditComponent } from './audit/audit.component';
@@ -21,6 +23,7 @@ import { GestionUtilisateurComponent } from './gestion-utilisateur/gestion-utili
 import { GestionRolesComponent } from './gestion-roles/gestion-roles.component';
 import { HomeComponent } from './home/home.component';
 import { ChefProjDashboardComponent } from './chef-proj-dashboard/chef-proj-dashboard.component';
+import { ChefVaudoiseDashboardComponent } from './chef-vaudoise-dashboard/chef-vaudoise-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
 import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
 
@@ -123,6 +126,60 @@ const routes: Routes = [
       },
       { 
         path: 'progress-projet2', 
+        component: HomeComponent // Créer un composant de suivi de progrès
+      },
+      { 
+        path: 'reports', 
+        component: AuditComponent // Réutiliser pour les rapports
+      },
+      { 
+        path: 'calendar', 
+        component: HomeComponent // Créer un composant calendrier
+      },
+      { 
+        path: 'milestones', 
+        component: HomeComponent // Créer un composant jalons
+      },
+      { 
+        path: 'deadlines', 
+        component: HomeComponent // Créer un composant échéances
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
+  // Routes Chef Vaudoise avec layout Chef Vaudoise
+  {
+    path: 'chef-vaudoise',
+    component: ChefVaudoiseLayoutComponent,
+    canActivate: [ChefVaudoiseRoleGuard],
+    children: [
+      { 
+        path: 'dashboard', 
+        component: ChefVaudoiseDashboardComponent
+      },
+      { 
+        path: 'vaudoise', 
+        component: GestionDocComponent // Réutiliser ou créer un composant spécifique
+      },
+      { 
+        path: 'assign-vaudoise', 
+        component: AssignUsersComponent
+      },
+      { 
+        path: 'view-assignments', 
+        component: AssignUsersComponent
+      },
+      { 
+        path: 'equipe-vaudoise', 
+        component: GestionUtilisateurComponent // Réutiliser ou créer un composant spécifique
+      },
+      { 
+        path: 'progress-vaudoise', 
         component: HomeComponent // Créer un composant de suivi de progrès
       },
       { 
