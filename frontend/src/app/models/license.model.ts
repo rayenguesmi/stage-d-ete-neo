@@ -1,3 +1,17 @@
+// Ajout du enum pour les types de comparaison
+export enum ComparisonType {
+  XML = 'XML',
+  JSON = 'JSON',
+  PDF = 'PDF'
+}
+
+export const COMPARISON_TYPE_LABELS: { [key: string]: string } = {
+  [ComparisonType.XML]: 'XML',
+  [ComparisonType.JSON]: 'JSON',
+  [ComparisonType.PDF]: 'PDF'
+};
+
+// Interface License mise à jour
 export interface License {
   id?: string;
   licenseKey: string;
@@ -8,6 +22,7 @@ export interface License {
   maxUsers: number;
   currentUsers: number;
   features?: string;
+  comparisonType?: ComparisonType; // Nouveau champ
   startDate: Date;
   endDate: Date;
   createdAt?: Date;
@@ -18,23 +33,27 @@ export interface License {
   daysBeforeExpiryAlert?: number;
 }
 
+// Interface LicenseCreateRequest mise à jour
 export interface LicenseCreateRequest {
   licenseKey?: string;
   clientName: string;
   licenseType: LicenseType;
   maxUsers: number;
   features?: string;
+  comparisonType?: ComparisonType; // Nouveau champ
   startDate: Date;
   endDate: Date;
   daysBeforeExpiryAlert?: number;
 }
 
+// Interface LicenseUpdateRequest mise à jour
 export interface LicenseUpdateRequest {
   licenseKey?: string;
   clientName?: string;
   licenseType?: LicenseType;
   maxUsers?: number;
   features?: string;
+  comparisonType?: ComparisonType; // Nouveau champ
   startDate?: Date;
   endDate?: Date;
   daysBeforeExpiryAlert?: number;

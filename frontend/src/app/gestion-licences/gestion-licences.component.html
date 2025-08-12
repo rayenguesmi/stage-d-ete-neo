@@ -133,6 +133,14 @@
           <span class="label">Max Projets :</span>
           <span class="value">{{ license.maxProjects }}</span>
         </div>
+        <div class="detail-row" *ngIf="license.comparisonType">
+          <span class="label">Type de comparaison :</span>
+          <span class="value">
+            <span class="comparison-type-badge" [ngClass]="getComparisonTypeBadgeClass(license.comparisonType)">
+              {{ comparisonTypeLabels[license.comparisonType] }}
+            </span>
+          </span>
+        </div>
         <div class="detail-row">
           <span class="label">Expiration :</span>
           <span class="value" [ngClass]="getDaysUntilExpiryClass(license.daysUntilExpiry)">
@@ -200,6 +208,24 @@
               class="form-control">
               <option *ngFor="let type of licenseTypes" [value]="type">{{ type }}</option>
             </select>
+          </div>
+
+          <!-- NOUVEAU CHAMP : Type de comparaison -->
+          <div class="form-group">
+            <label for="comparisonType">Type de comparaison *</label>
+            <select 
+              id="comparisonType"
+              [(ngModel)]="newLicense.comparisonType" 
+              name="comparisonType"
+              required
+              class="form-control">
+              <option *ngFor="let type of comparisonTypes" [value]="type">
+                {{ comparisonTypeLabels[type] }}
+              </option>
+            </select>
+            <small class="form-text text-muted">
+              Type de fichier pris en charge pour la comparaison de documents
+            </small>
           </div>
           
           <div class="form-group">
@@ -357,6 +383,14 @@
               <span class="label">Expiration :</span>
               <span class="value">{{ formatDate(validationResult.license.expiryDate) }}</span>
             </div>
+            <div class="detail-row" *ngIf="validationResult.license.comparisonType">
+              <span class="label">Type de comparaison :</span>
+              <span class="value">
+                <span class="comparison-type-badge" [ngClass]="getComparisonTypeBadgeClass(validationResult.license.comparisonType)">
+                  {{ comparisonTypeLabels[validationResult.license.comparisonType] }}
+                </span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -364,3 +398,165 @@
   </div>
 </div>
 
+<style>
+/* Styles pour les badges de type de comparaison */
+.comparison-type-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-xml {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.badge-json {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #ce93d8;
+}
+
+.badge-pdf {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+}
+
+.badge-default {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+/* Styles pour le formulaire */
+.form-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Styles pour les statuts */
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.status-expired {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.status-inactive {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.status-trial {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* Classes utilitaires pour les couleurs de texte */
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+/* Styles pour les features */
+.feature-tag {
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  margin-right: 4px;
+}
+
+/* Grille des features dans le formulaire */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.feature-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.feature-checkbox label {
+  margin: 0;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+/* Styles pour la validation */
+.validation-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background-color: #f8f9fa;
+}
+
+.result-status.valid {
+  color: #28a745;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.result-status.invalid {
+  color: #dc3545;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.license-info {
+  margin-top: 1rem;
+}
+
+.license-info h5 {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+</style>

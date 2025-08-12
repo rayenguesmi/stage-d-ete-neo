@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { License, LicenseService, LicenseStatistics, LicenseValidationResult } from '../services/license.service';
+import { License, LicenseService, LicenseStatistics, LicenseValidationResult, ComparisonType, COMPARISON_TYPE_LABELS } from '../services/license.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -33,6 +33,10 @@ export class GestionLicencesComponent implements OnInit {
   
   // Types de licence disponibles
   licenseTypes = ['STANDARD', 'PREMIUM', 'ENTERPRISE', 'TRIAL'];
+  
+  // Types de comparaison disponibles
+  comparisonTypes = Object.values(ComparisonType);
+  comparisonTypeLabels = COMPARISON_TYPE_LABELS;
   
   // Fonctionnalités disponibles
   availableFeatures = [
@@ -194,14 +198,7 @@ export class GestionLicencesComponent implements OnInit {
       confirmButtonText: '<i class="fas fa-trash"></i> Supprimer',
       cancelButtonText: '<i class="fas fa-times"></i> Annuler',
       reverseButtons: true,
-      focusCancel: true,
-      customClass: {
-        popup: 'swal2-modern-popup',
-        title: 'swal2-modern-title',
-        confirmButton: 'btn btn-danger',
-        cancelButton: 'btn btn-secondary'
-      },
-      buttonsStyling: false
+      focusCancel: true
     }).then((result) => {
       if (result.isConfirmed) {
         this.licenseService.deleteLicense(license.id!).subscribe({
@@ -212,11 +209,6 @@ export class GestionLicencesComponent implements OnInit {
               icon: 'success',
               confirmButtonColor: '#28a745',
               confirmButtonText: 'OK',
-              customClass: {
-                popup: 'swal2-modern-popup',
-                confirmButton: 'btn btn-success'
-              },
-              buttonsStyling: false,
               timer: 3000,
               timerProgressBar: true
             });
@@ -229,12 +221,7 @@ export class GestionLicencesComponent implements OnInit {
               text: 'Une erreur est survenue lors de la suppression de la licence.',
               icon: 'error',
               confirmButtonColor: '#dc3545',
-              confirmButtonText: 'OK',
-              customClass: {
-                popup: 'swal2-modern-popup',
-                confirmButton: 'btn btn-danger'
-              },
-              buttonsStyling: false
+              confirmButtonText: 'OK'
             });
             console.error('Erreur:', error);
           }
@@ -384,6 +371,7 @@ export class GestionLicencesComponent implements OnInit {
       maxUsers: 10,
       maxProjects: 5,
       features: ['USER_MANAGEMENT', 'PROJECT_MANAGEMENT'],
+      comparisonType: ComparisonType.XML, // Nouvelle propriété avec valeur par défaut
       isActive: true,
       isTrial: false
     };
@@ -421,5 +409,15 @@ export class GestionLicencesComponent implements OnInit {
     if (days < 0) return 'text-danger';
     if (days < 30) return 'text-warning';
     return 'text-success';
+  }
+
+  getComparisonTypeBadgeClass(comparisonType?: ComparisonType): string {
+    if (!comparisonType) return 'badge-default';
+    switch (comparisonType) {
+      case ComparisonType.XML: return 'badge-xml';
+      case ComparisonType.JSON: return 'badge-json';
+      case ComparisonType.PDF: return 'badge-pdf';
+      default: return 'badge-default';
+    }
   }
 }

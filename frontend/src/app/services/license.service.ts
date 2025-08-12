@@ -2,6 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Ajout du enum pour les types de comparaison
+export enum ComparisonType {
+  XML = 'XML',
+  JSON = 'JSON',
+  PDF = 'PDF'
+}
+
+export const COMPARISON_TYPE_LABELS: { [key: string]: string } = {
+  [ComparisonType.XML]: 'XML',
+  [ComparisonType.JSON]: 'JSON',
+  [ComparisonType.PDF]: 'PDF'
+};
+
 export interface License {
   id?: string;
   licenseName: string;
@@ -15,6 +28,7 @@ export interface License {
   maxUsers?: number;
   maxProjects?: number;
   features?: string[];
+  comparisonType?: ComparisonType; // Nouveau champ ajouté
   issueDate?: Date;
   expiryDate?: Date;
   activationDate?: Date;
@@ -135,4 +149,3 @@ export class LicenseService {
     return this.http.post<string>(`${this.apiUrl}/initialize-defaults`, {});
   }
 }
-
