@@ -25,7 +25,7 @@
         <th>Prénom</th>
         <th>Email</th>
         <th>Statut</th>
-        <th>Actions</th>
+        <th class="menu-column"></th>
       </tr>
     </thead>
     <tbody>
@@ -36,9 +36,17 @@
         <td [ngClass]="{'active': user.isActive, 'inactive': !user.isActive}">
           {{ user.isActive ? 'Actif' : 'Inactif' }}
         </td>
-        <td>
-          <button (click)="toggleStatus(user)">Activer/Désactiver</button>
-          <button (click)="deleteUser(user)">Supprimer</button>
+        <td class="menu-cell">
+          <div class="dropdown-menu-container">
+            <button class="menu-trigger" (click)="toggleMenu(user.id!)" [attr.aria-expanded]="isMenuOpen(user.id!)">
+              ⋮
+            </button>
+            <div class="dropdown-menu" [class.show]="isMenuOpen(user.id!)">
+              <button class="dropdown-item danger" (click)="deleteUser(user)">
+                <i class="fas fa-trash"></i> Supprimer utilisateur
+              </button>
+            </div>
+          </div>
         </td>
       </tr>
     </tbody>

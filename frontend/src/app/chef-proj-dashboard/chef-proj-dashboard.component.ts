@@ -54,8 +54,8 @@ export class ChefProjDashboardComponent implements OnInit {
     }
   ];
 
-  // Utilisateurs assignés au projet Neoliance
-  assignedUsersProjet1: User[] = []; // Neoliance seulement
+  // Utilisateurs assignés au projet Neolianse
+  assignedUsersProjet1: User[] = []; // Neolianse seulement
 
   // Activités récentes
   recentActivities: Activity[] = [
@@ -98,32 +98,32 @@ export class ChefProjDashboardComponent implements OnInit {
       this.assignedUsersProjet1 = savedAssignments.projet1 || [];
     } else {
       // Assignations par défaut
-      this.assignedUsersProjet1 = [this.allUsers[1]]; // Rayen assigné au Neoliance
+      this.assignedUsersProjet1 = [this.allUsers[1]]; // Rayen assigné au Neolianse
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Méthode pour assigner un utilisateur au projet Neoliance
-  assignUserToNeoliance(user: User): void {
-    if (!this.isUserAssignedToNeoliance(user)) {
+  // Méthode pour assigner un utilisateur au projet Neolianse
+  assignUserToNeolianse(user: User): void {
+    if (!this.isUserAssignedToNeolianse(user)) {
       this.assignedUsersProjet1.push(user);
-      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neoliance`, 'À l\'instant');
+      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neolianse`, 'À l\'instant');
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Méthode pour désassigner un utilisateur du projet Neoliance
-  unassignUserFromNeoliance(user: User): void {
+  // Méthode pour désassigner un utilisateur du projet Neolianse
+  unassignUserFromNeolianse(user: User): void {
     const index = this.assignedUsersProjet1.findIndex((u: User) => u.id === user.id);
     if (index > -1) {
       this.assignedUsersProjet1.splice(index, 1);
-      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neoliance`, 'À l\'instant');
+      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neolianse`, 'À l\'instant');
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Vérifier si un utilisateur est assigné au projet Neoliance
-  isUserAssignedToNeoliance(user: User): boolean {
+  // Vérifier si un utilisateur est assigné au projet Neolianse
+  isUserAssignedToNeolianse(user: User): boolean {
     return this.assignedUsersProjet1.some((u: User) => u.id === user.id);
   }
 
@@ -131,7 +131,7 @@ export class ChefProjDashboardComponent implements OnInit {
 
   // Obtenir les utilisateurs disponibles (non assignés)
   getAvailableUsers(): User[] {
-    return this.allUsers.filter((u: User) => !this.isUserAssignedToNeoliance(u));
+    return this.allUsers.filter((u: User) => !this.isUserAssignedToNeolianse(u));
   }
 
   getTotalAssignedUsers(): number {
@@ -189,7 +189,7 @@ export class ChefProjDashboardComponent implements OnInit {
 
   // Méthodes pour les statistiques du dashboard
   getProjectProgress(): number {
-    // Simulation du progrès du projet Neoliance
+    // Simulation du progrès du projet Neolianse
     return Math.floor(Math.random() * 100);
   }
 

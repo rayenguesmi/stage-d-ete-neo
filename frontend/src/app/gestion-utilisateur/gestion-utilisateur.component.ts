@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { UserService, User } from '../services/user.service';
 
 @Component({
@@ -10,6 +10,7 @@ export class GestionUtilisateurComponent implements OnInit {
 
   users: User[] = [];
   errorMessage: string = '';
+  openMenuId: string | null = null;
 
   newUser: User = {
     firstName: '',
@@ -96,21 +97,55 @@ export class GestionUtilisateurComponent implements OnInit {
   }
 
   deleteUser(user: User): void {
-  if (!user.id || !confirm("Confirmer la suppression ?")) return;
+    if (!user.id || !confirm("Confirmer la suppression ?")) return;
 
-  this.userService.deleteUser(user.id).subscribe({
-    next: () => {
-      // Conversion explicite pour éviter les problèmes de type
-      const userIdToDelete = String(user.id);
-      this.users = this.users.filter(u => String(u.id) !== userIdToDelete);
-      
-      this.errorMessage = '';
-      console.log('Utilisateur supprimé, nouvelle taille:', this.users.length);
-    },
-    error: (err: any) => {
-      console.error('Erreur lors de la suppression:', err);
-      this.errorMessage = "Erreur lors de la suppression";
+    this.userService.deleteUser(user.id).subscribe({
+      next: () => {
+        // Conversion explicite pour éviter les problèmes de type
+        const userIdToDelete = String(user.id);
+        this.users = this.users.filter(u => String(u.id) !== userIdToDelete);
+        
+        this.errorMessage = '';
+        console.log('Utilisateur supprimé, nouvelle taille:', this.users.length);
+      },
+      error: (err: any) => {
+        console.error('Erreur lors de la suppression:', err);
+        this.errorMessage = "Erreur lors de la suppression";
+      }
+    });
+    this.closeMenu();
+  }
+
+  // Menu management methods
+  toggleMenu(userId: string): void {
+    this.openMenuId = this.openMenuId === userId ? null : userId;
+  }
+
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  isMenuOpen(userId: string): boolean {
+    return this.openMenuId === userId;
+  }
+
+  viewUserDetails(user: User): void {
+    // TODO: Implement view details functionality
+    console.log('Voir détails utilisateur:', user);
+    this.closeMenu();
+  }
+
+  editUser(user: User): void {
+    // TODO: Implement edit user functionality
+    console.log('Modifier utilisateur:', user);
+    this.closeMenu();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.dropdown-menu-container')) {
+      this.closeMenu();
     }
-  });
-}
+  }
 }

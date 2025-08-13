@@ -210,23 +210,7 @@
             </select>
           </div>
 
-          <!-- NOUVEAU CHAMP : Type de comparaison -->
-          <div class="form-group">
-            <label for="comparisonType">Type de comparaison *</label>
-            <select 
-              id="comparisonType"
-              [(ngModel)]="newLicense.comparisonType" 
-              name="comparisonType"
-              required
-              class="form-control">
-              <option *ngFor="let type of comparisonTypes" [value]="type">
-                {{ comparisonTypeLabels[type] }}
-              </option>
-            </select>
-            <small class="form-text text-muted">
-              Type de fichier pris en charge pour la comparaison de documents
-            </small>
-          </div>
+          
           
           <div class="form-group">
             <label for="customerName">Nom du client *</label>
@@ -251,7 +235,7 @@
           </div>
           
           <div class="form-group">
-            <label for="organization">Organisation</label>
+            <label for="organization">project</label>
             <input 
               type="text" 
               id="organization"

@@ -197,7 +197,7 @@
           <th>Type</th>
           <th>Permissions</th>
           <th>Statut du rôle</th>
-          <th>Actions</th>
+          <th class="menu-column"></th>
         </tr>
       </thead>
       <tbody>
@@ -239,34 +239,22 @@
               {{ role.isActive ? 'Actif' : 'Inactif' }}
             </span>
           </td>
-          <td>
-            <div class="action-buttons">
-              <button 
-                *ngIf="!role.isSystemRole" 
-                class="btn btn-sm btn-secondary" 
-                (click)="editRole(role)"
-                title="Modifier">
-                Modifier
+          <td class="menu-cell">
+            <div class="dropdown-menu-container">
+              <button class="menu-trigger" (click)="toggleMenu(role.id!)" [attr.aria-expanded]="isMenuOpen(role.id!)">
+                ⋮
               </button>
-              <button 
-                *ngIf="!role.isSystemRole" 
-                class="btn btn-sm" 
-                [class.btn-warning]="role.isActive"
-                [class.btn-success]="!role.isActive"
-                (click)="toggleRoleStatus(role)"
-                [title]="role.isActive ? 'Désactiver' : 'Activer'">
-                {{ role.isActive ? 'Désactiver' : 'Activer' }}
-              </button>
-              <button 
-                *ngIf="!role.isSystemRole" 
-                class="btn btn-sm btn-danger" 
-                (click)="deleteRole(role)"
-                title="Supprimer">
-                Supprimer
-              </button>
-              <span *ngIf="role.isSystemRole" class="system-role-notice">
-                Rôle système (non modifiable)
-              </span>
+              <div class="dropdown-menu" [class.show]="isMenuOpen(role.id!)">
+                <button *ngIf="!role.isSystemRole" class="dropdown-item" (click)="editRoleFromMenu(role)">
+                  <i class="fas fa-edit"></i> Modifier rôle
+                </button>
+                <button *ngIf="!role.isSystemRole" class="dropdown-item danger" (click)="deleteRoleFromMenu(role)">
+                  <i class="fas fa-trash"></i> Supprimer rôle
+                </button>
+                <div *ngIf="role.isSystemRole" class="dropdown-item disabled">
+                  <i class="fas fa-lock"></i> Rôle système (non modifiable)
+                </div>
+              </div>
             </div>
           </td>
         </tr>

@@ -54,27 +54,27 @@ export class ChefProjDashboardNeolianceComponent implements OnInit {
     }
   ];
 
-  // Utilisateurs assignés au projet Neoliance uniquement
-  assignedUsersNeoliance: User[] = [];
+  // Utilisateurs assignés au projet Neolianse uniquement
+  assignedUsersNeolianse: User[] = [];
 
   // Activités récentes
   recentActivities: Activity[] = [
     {
       type: 'assign',
       icon: 'fa-user-plus',
-      text: 'Rayen GUESMI a été assigné au Neoliance',
+      text: 'Rayen GUESMI a été assigné au Neolianse',
       time: 'Il y a 2 heures'
     },
     {
       type: 'update',
       icon: 'fa-edit',
-      text: 'Mise à jour du statut du Neoliance - 75% complété',
+      text: 'Mise à jour du statut du Neolianse - 75% complété',
       time: 'Il y a 4 heures'
     },
     {
       type: 'update',
       icon: 'fa-chart-line',
-      text: 'Rapport mensuel généré pour le projet Neoliance',
+      text: 'Rapport mensuel généré pour le projet Neolianse',
       time: 'Il y a 2 jours'
     }
   ];
@@ -89,41 +89,41 @@ export class ChefProjDashboardNeolianceComponent implements OnInit {
     // Charger les assignations depuis le localStorage ou un service
     const savedAssignments = this.loadAssignmentsFromStorage();
     if (savedAssignments) {
-      this.assignedUsersNeoliance = savedAssignments.neoliance || [];
+      this.assignedUsersNeolianse = savedAssignments.neolianse || [];
     } else {
       // Assignations par défaut
-      this.assignedUsersNeoliance = [this.allUsers[1]]; // Rayen assigné au projet Neoliance
+      this.assignedUsersNeolianse = [this.allUsers[1]]; // Rayen assigné au projet Neolianse
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Méthode pour assigner un utilisateur au projet Neoliance
-  assignUserToNeoliance(user: User): void {
-    if (!this.isUserAssignedToNeoliance(user)) {
-      this.assignedUsersNeoliance.push(user);
-      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neoliance`, 'À l\'instant');
+  // Méthode pour assigner un utilisateur au projet Neolianse
+  assignUserToNeolianse(user: User): void {
+    if (!this.isUserAssignedToNeolianse(user)) {
+      this.assignedUsersNeolianse.push(user);
+      this.addActivity('assign', `${user.firstName} ${user.lastName} a été assigné au projet Neolianse`, 'À l\'instant');
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Méthode pour désassigner un utilisateur du projet Neoliance
-  unassignUserFromNeoliance(user: User): void {
-    const index = this.assignedUsersNeoliance.findIndex(u => u.id === user.id);
+  // Méthode pour désassigner un utilisateur du projet Neolianse
+  unassignUserFromNeolianse(user: User): void {
+    const index = this.assignedUsersNeolianse.findIndex(u => u.id === user.id);
     if (index > -1) {
-      this.assignedUsersNeoliance.splice(index, 1);
-      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neoliance`, 'À l\'instant');
+      this.assignedUsersNeolianse.splice(index, 1);
+      this.addActivity('unassign', `${user.firstName} ${user.lastName} a été retiré du projet Neolianse`, 'À l\'instant');
       this.saveAssignmentsToStorage();
     }
   }
 
-  // Vérifier si un utilisateur est assigné au projet Neoliance
-  isUserAssignedToNeoliance(user: User): boolean {
-    return this.assignedUsersNeoliance.some(u => u.id === user.id);
+  // Vérifier si un utilisateur est assigné au projet Neolianse
+  isUserAssignedToNeolianse(user: User): boolean {
+    return this.assignedUsersNeolianse.some(u => u.id === user.id);
   }
 
   // Obtenir les utilisateurs disponibles (non assignés)
   getAvailableUsers(): User[] {
-    const assignedUserIds = this.assignedUsersNeoliance.map(u => u.id);
+    const assignedUserIds = this.assignedUsersNeolianse.map(u => u.id);
     
     return this.allUsers.filter(user => 
       !assignedUserIds.includes(user.id)
@@ -131,7 +131,7 @@ export class ChefProjDashboardNeolianceComponent implements OnInit {
   }
 
   getTotalAssignedUsers(): number {
-    return this.assignedUsersNeoliance.length;
+    return this.assignedUsersNeolianse.length;
   }
 
   getAvailableUsersCount(): number {
@@ -165,7 +165,7 @@ export class ChefProjDashboardNeolianceComponent implements OnInit {
   // Sauvegarder les assignations dans le localStorage
   private saveAssignmentsToStorage(): void {
     const assignments = {
-      neoliance: this.assignedUsersNeoliance
+      neolianse: this.assignedUsersNeolianse
     };
     localStorage.setItem('chef-proj-neoliance-assignments', JSON.stringify(assignments));
   }
@@ -178,7 +178,7 @@ export class ChefProjDashboardNeolianceComponent implements OnInit {
 
   // Méthode pour réinitialiser toutes les assignations (utile pour les tests)
   resetAllAssignments(): void {
-    this.assignedUsersNeoliance = [];
+    this.assignedUsersNeolianse = [];
     this.addActivity("update", "Toutes les assignations ont été réinitialisées", "À l\"instant");
     this.saveAssignmentsToStorage();
   }

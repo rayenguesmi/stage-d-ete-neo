@@ -42,18 +42,10 @@
 
     <!-- Menu déroulant Assistant IA -->
     <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('assistant')">
-        <i class="fas fa-robot icon"></i> Assistant IA
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['assistant']">
-        <a routerLink="/proj1/home" routerLinkActive="active" [class.active]="currentView === 'chatbot'" (click)="setCurrentView('chatbot')">
-          <i class="fas fa-comments icon"></i> Chatbot RH
+   
+      <a routerLink="/proj1/g-de-campagne" routerLinkActive="active" [class.active]="currentView === 'suivi'" (click)="setCurrentView('suivi')">
+          <i class="fas fa-clipboard-check icon"></i> Suivi d'exécution
         </a>
-        <a routerLink="/proj1/home" routerLinkActive="active" [class.active]="currentView === 'search-ai'" (click)="setCurrentView('search-ai')">
-          <i class="fas fa-search-plus icon"></i> Recherche intelligente
-        </a>
-      </div>
     </div>
   </div>
 

@@ -206,7 +206,7 @@ export class ChefVaudoiseDashboardComponent implements OnInit {
   }
 
   getProjectProgress(): number {
-    // Simulation du progrès du projet Neoliance
+    // Simulation du progrès du projet Neolianse
     return Math.floor(Math.random() * 100);
   }
 

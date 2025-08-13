@@ -29,6 +29,10 @@ import { ChefVaudoiseLayoutComponent } from './chef-vaudoise-layout/chef-vaudois
 import { ChefVaudoiseDashboardComponent } from './chef-vaudoise-dashboard/chef-vaudoise-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
 import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
+import { EquipeVaudoiseComponent } from './equipe-vaudoise/equipe-vaudoise.component';
+import { AssignVaudoiseComponent } from './assign-vaudoise/assign-vaudoise.component';
+import { EquipeNeolianseComponent } from './equipe-neolianse/equipe-neolianse.component';
+import { AssignNeolianseComponent } from './assign-neolianse/assign-neolianse.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +56,11 @@ import { UserDashboardComponent } from './user-dashboard/user-dashboard.componen
     ChefVaudoiseLayoutComponent,
     ChefVaudoiseDashboardComponent,
     AssignUsersComponent,
-    UserDashboardComponent
+    UserDashboardComponent,
+    EquipeVaudoiseComponent,
+    AssignVaudoiseComponent,
+    EquipeNeolianseComponent,
+    AssignNeolianseComponent
     
   ],
   imports: [

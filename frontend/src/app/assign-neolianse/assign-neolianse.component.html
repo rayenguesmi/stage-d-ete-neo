@@ -1,0 +1,176 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="fas fa-user-plus"></i>
+          Assignement des utilisateurs à Neolianse
+        </h1>
+        <p class="page-description">Gérez l'assignation des utilisateurs au projet Neolianse</p>
+      </div>
+
+      <!-- Notifications -->
+      <div *ngIf="notification" class="alert" [class.alert-success]="notification.type === 'success'" [class.alert-danger]="notification.type === 'error'">
+        <i class="fas" [class.fa-check-circle]="notification.type === 'success'" [class.fa-exclamation-circle]="notification.type === 'error'"></i>
+        {{ notification.message }}
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card bg-primary text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h6 class="card-title">Utilisateurs Disponibles</h6>
+                  <h3 class="mb-0">{{ filteredAvailableUsers.length }}</h3>
+                </div>
+                <div class="card-icon">
+                  <i class="fas fa-users fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h6 class="card-title">Assignés à Neolianse</h6>
+                  <h3 class="mb-0">{{ assignedUsers.length }}</h3>
+                </div>
+                <div class="card-icon">
+                  <i class="fas fa-user-check fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h6 class="card-title">Total Utilisateurs</h6>
+                  <h3 class="mb-0">{{ allUsers.length }}</h3>
+                </div>
+                <div class="card-icon">
+                  <i class="fas fa-users-cog fa-2x"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Available Users Section -->
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-users"></i>
+                Utilisateurs Disponibles
+              </h5>
+            </div>
+            <div class="card-body">
+              <!-- Search and Actions -->
+              <div class="actions-bar mb-3">
+                <div class="search-container">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-search"></i>
+                    </span>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="Rechercher un utilisateur..."
+                      [(ngModel)]="searchTerm"
+                      (input)="onSearchChange()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Available Users List -->
+              <div class="users-list">
+                <div *ngFor="let user of filteredAvailableUsers" class="user-item">
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      <i class="fas fa-user-circle text-primary"></i>
+                    </div>
+                    <div class="user-details">
+                      <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+                      <small class="text-muted d-block">{{ user.email }}</small>
+                      <span class="badge bg-info">{{ user.role }}</span>
+                    </div>
+                  </div>
+                  <div class="user-actions">
+                    <button class="btn btn-sm btn-primary" 
+                            (click)="assignUser(user)"
+                            title="Assigner au projet Neolianse">
+                      <i class="fas fa-plus"></i>
+                      Assigner
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="filteredAvailableUsers.length === 0" class="text-center p-4">
+                  <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                  <h6 class="text-muted">Aucun utilisateur disponible</h6>
+                  <p class="text-muted">
+                    {{ searchTerm ? 'Aucun résultat pour votre recherche' : 'Tous les utilisateurs sont déjà assignés' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Users Section -->
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-user-check"></i>
+                Utilisateurs Assignés à Neolianse
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="assigned-users-list">
+                <div *ngFor="let user of assignedUsers" class="assigned-user-item">
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      <i class="fas fa-user-circle text-success"></i>
+                    </div>
+                    <div class="user-details">
+                      <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+
+                      <small class="text-muted d-block">{{ user.email }}</small>
+                      <div class="user-meta">
+                        <span class="badge bg-success">{{ user.role }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="user-actions">
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="unassignUser(user)"
+                            title="Retirer du projet">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="assignedUsers.length === 0" class="text-center p-4">
+                  <i class="fas fa-user-times fa-3x text-muted mb-3"></i>
+                  <h6 class="text-muted">Aucun utilisateur assigné</h6>
+                  <p class="text-muted">Aucun utilisateur n'est actuellement assigné au projet Neolianse</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -26,6 +26,10 @@ import { ChefProjDashboardComponent } from './chef-proj-dashboard/chef-proj-dash
 import { ChefVaudoiseDashboardComponent } from './chef-vaudoise-dashboard/chef-vaudoise-dashboard.component';
 import { AssignUsersComponent } from './assign-users/assign-users.component';
 import { UserDashboardComponent } from './user-dashboard/user-dashboard.component';
+import { EquipeVaudoiseComponent } from './equipe-vaudoise/equipe-vaudoise.component';
+import { AssignVaudoiseComponent } from './assign-vaudoise/assign-vaudoise.component';
+import { EquipeNeolianseComponent } from './equipe-neolianse/equipe-neolianse.component';
+import { AssignNeolianseComponent } from './assign-neolianse/assign-neolianse.component';
 
 const routes: Routes = [
   // Routes Admin avec layout Admin
@@ -102,7 +106,7 @@ const routes: Routes = [
       },
       { 
         path: 'assign-projet1', 
-        component: AssignUsersComponent
+        component: AssignNeolianseComponent
       },
       { 
         path: 'assign-projet2', 
@@ -114,7 +118,7 @@ const routes: Routes = [
       },
       { 
         path: 'equipe-projet1', 
-        component: GestionUtilisateurComponent // Réutiliser ou créer un composant spécifique
+        component: EquipeNeolianseComponent
       },
       { 
         path: 'equipe-projet2', 
@@ -168,7 +172,7 @@ const routes: Routes = [
       },
       { 
         path: 'assign-vaudoise', 
-        component: AssignUsersComponent
+        component: AssignVaudoiseComponent
       },
       { 
         path: 'view-assignments', 
@@ -176,7 +180,7 @@ const routes: Routes = [
       },
       { 
         path: 'equipe-vaudoise', 
-        component: GestionUtilisateurComponent // Réutiliser ou créer un composant spécifique
+        component: EquipeVaudoiseComponent
       },
       { 
         path: 'progress-vaudoise', 

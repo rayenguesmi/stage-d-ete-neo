@@ -2,85 +2,23 @@
   <div class="sidebar">
     <h2>NeoTM</h2>
     <a routerLink="/chef-proj/dashboard" routerLinkActive="active" [class.active]="currentView === 'home'" (click)="setCurrentView('home')">
-      <i class="fas fa-home icon"></i> Tableau de Bord 
+      <i class="fas fa-home icon"></i> Tableau de Bord
     </a>
 
-    <!-- Menu déroulant Gestion Projets -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('projets')">
-        <i class="fas fa-project-diagram icon"></i> Gestion Projets
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['projets']">
-        <a routerLink="/chef-proj/projet1" routerLinkActive="active" [class.active]="currentView === 'projet1'" (click)="setCurrentView('projet1')">
-          <i class="fas fa-folder icon"></i> Neoliance
-        </a>
-      </div>
-    </div>
+    <!-- Projet Neolianse -->
+    <a routerLink="/chef-proj/projet1" routerLinkActive="active" [class.active]="currentView === 'projet1'" (click)="setCurrentView('projet1')">
+      <i class="fas fa-project-diagram icon"></i> Projet Neolianse
+    </a>
 
-    <!-- Menu déroulant Assignation Utilisateurs -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('assignation')">
-        <i class="fas fa-users-cog icon"></i> Assignation Utilisateurs
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['assignation']">
-        <a routerLink="/chef-proj/assign-projet1" routerLinkActive="active" [class.active]="currentView === 'assign-projet1'" (click)="setCurrentView('assign-projet1')">
-          <i class="fas fa-user-plus icon"></i> Assigner au Neoliance
-        </a>
-        <a routerLink="/chef-proj/view-assignments" routerLinkActive="active" [class.active]="currentView === 'view-assignments'" (click)="setCurrentView('view-assignments')">
-          <i class="fas fa-list-ul icon"></i> Voir les Assignations
-        </a>
-      </div>
-    </div>
+    <!-- Équipe Neolianse -->
+    <a routerLink="/chef-proj/equipe-projet1" routerLinkActive="active" [class.active]="currentView === 'equipe-projet1'" (click)="setCurrentView('equipe-projet1')">
+      <i class="fas fa-users icon"></i> Équipe Neolianse
+    </a>
 
-    <!-- Menu déroulant Équipes -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('equipes')">
-        <i class="fas fa-users icon"></i> Gestion Équipes
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['equipes']">
-        <a routerLink="/chef-proj/equipe-projet1" routerLinkActive="active" [class.active]="currentView === 'equipe-projet1'" (click)="setCurrentView('equipe-projet1')">
-          <i class="fas fa-users icon"></i> Équipe Neoliance
-        </a>
-      </div>
-    </div>
-
-    <!-- Menu déroulant Suivi & Rapports -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('suivi')">
-        <i class="fas fa-chart-line icon"></i> Suivi & Rapports
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['suivi']">
-        <a routerLink="/chef-proj/progress-projet1" routerLinkActive="active" [class.active]="currentView === 'progress-projet1'" (click)="setCurrentView('progress-projet1')">
-          <i class="fas fa-chart-bar icon"></i> Progrès Neoliance
-        </a>
-        <a routerLink="/chef-proj/reports" routerLinkActive="active" [class.active]="currentView === 'reports'" (click)="setCurrentView('reports')">
-          <i class="fas fa-file-alt icon"></i> Rapports
-        </a>
-      </div>
-    </div>
-
-    <!-- Menu déroulant Planification -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('planification')">
-        <i class="fas fa-calendar-alt icon"></i> Planification
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['planification']">
-        <a routerLink="/chef-proj/calendar" routerLinkActive="active" [class.active]="currentView === 'calendar'" (click)="setCurrentView('calendar')">
-          <i class="fas fa-calendar icon"></i> Calendrier
-        </a>
-        <a routerLink="/chef-proj/milestones" routerLinkActive="active" [class.active]="currentView === 'milestones'" (click)="setCurrentView('milestones')">
-          <i class="fas fa-flag icon"></i> Jalons
-        </a>
-        <a routerLink="/chef-proj/deadlines" routerLinkActive="active" [class.active]="currentView === 'deadlines'" (click)="setCurrentView('deadlines')">
-          <i class="fas fa-clock icon"></i> Échéances
-        </a>
-      </div>
-    </div>
+    <!-- Assignement des utilisateurs à Neolianse -->
+    <a routerLink="/chef-proj/assign-projet1" routerLinkActive="active" [class.active]="currentView === 'assign-projet1'" (click)="setCurrentView('assign-projet1')">
+      <i class="fas fa-user-plus icon"></i> Assignement des utilisateurs à Neolianse
+    </a>
   </div>
 
   <div class="main">

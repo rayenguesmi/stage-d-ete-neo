@@ -17,6 +17,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   activeUsers = 0;
   totalDocuments = 0;
   totalCampaigns = 0;
+  activeProjects = 4; // Nombre de projets actifs
 
   userStats = {
     administrators: 0,

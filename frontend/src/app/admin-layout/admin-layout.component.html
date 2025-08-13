@@ -88,40 +88,8 @@
       </div>
     </div>
 
-    <!-- Menu déroulant Tableaux de bord -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('dashboard')">
-        <i class="fas fa-chart-pie icon"></i> Tableaux de bord
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['dashboard']">
-        <a routerLink="/admin/dashboard" routerLinkActive="active" [class.active]="currentView === 'kpi'" (click)="setCurrentView('kpi')">
-          <i class="fas fa-bullseye icon"></i> Indicateurs (KPI)
-        </a>
-        <a routerLink="/admin/dashboard" routerLinkActive="active" [class.active]="currentView === 'bi'" (click)="setCurrentView('bi')">
-          <i class="fas fa-chart-area icon"></i> Power BI / Grafana
-        </a>
-      </div>
-    </div>
+  
 
-    <!-- Menu déroulant Assistant IA -->
-    <div class="sidebar-group">
-      <button class="sidebar-dropdown" (click)="toggleDropdown('assistant')">
-        <i class="fas fa-robot icon"></i> Assistant IA
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </button>
-      <div class="sidebar-submenu" [class.open]="dropdowns['assistant']">
-        <a routerLink="/admin/dashboard" routerLinkActive="active" [class.active]="currentView === 'chatbot'" (click)="setCurrentView('chatbot')">
-          <i class="fas fa-comments icon"></i> Chatbot RH
-        </a>
-        <a routerLink="/admin/dashboard" routerLinkActive="active" [class.active]="currentView === 'search-ai'" (click)="setCurrentView('search-ai')">
-          <i class="fas fa-search-plus icon"></i> Recherche intelligente
-        </a>
-        <a routerLink="/admin/dashboard" routerLinkActive="active" [class.active]="currentView === 'resume'" (click)="setCurrentView('resume')">
-          <i class="fas fa-stream icon"></i> Résumé / catégorisation automatique
-        </a>
-      </div>
-    </div>
 
     <!-- Menu déroulant Connecteurs & Intégration -->
     <div class="sidebar-group">

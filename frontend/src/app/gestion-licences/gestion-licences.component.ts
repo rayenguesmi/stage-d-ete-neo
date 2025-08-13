@@ -40,16 +40,10 @@ export class GestionLicencesComponent implements OnInit {
   
   // Fonctionnalités disponibles
   availableFeatures = [
-    'USER_MANAGEMENT',
-    'PROJECT_MANAGEMENT', 
-    'BASIC_REPORTING',
-    'ADVANCED_REPORTING',
-    'API_ACCESS',
-    'CUSTOM_ROLES',
-    'AUDIT_LOGS',
-    'BACKUP_RESTORE',
-    'MULTI_TENANT',
-    'SSO_INTEGRATION'
+   'COMPARAISON_XML',
+'COMPARAISON_PDF',
+'COMPARAISON_JSON'
+
   ];
 
   constructor(private licenseService: LicenseService) { }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Role, RoleService } from '../services/role.service';
 import { Permission, PermissionService } from '../services/permission.service';
 import { User, UserService } from '../services/user.service';
@@ -47,6 +47,9 @@ export class GestionRolesComponent implements OnInit {
   
   // Permissions groupées par module
   permissionsByModule: { [key: string]: Permission[] } = {};
+  
+  // Menu management
+  openMenuId: string | null = null;
 
   constructor(
     private roleService: RoleService,
@@ -646,5 +649,42 @@ export class GestionRolesComponent implements OnInit {
     if (!userId) return '';
     const user = this.users.find(u => u.id === userId);
     return user ? user.email || '' : '';
+  }
+
+  // Menu management methods
+  toggleMenu(roleId: string): void {
+    this.openMenuId = this.openMenuId === roleId ? null : roleId;
+  }
+
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  isMenuOpen(roleId: string): boolean {
+    return this.openMenuId === roleId;
+  }
+
+  viewRoleDetails(role: Role): void {
+    // TODO: Implement view details functionality
+    console.log('Voir détails rôle:', role);
+    this.closeMenu();
+  }
+
+  editRoleFromMenu(role: Role): void {
+    this.editRole(role);
+    this.closeMenu();
+  }
+
+  deleteRoleFromMenu(role: Role): void {
+    this.deleteRole(role);
+    this.closeMenu();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.dropdown-menu-container')) {
+      this.closeMenu();
+    }
   }
 }
