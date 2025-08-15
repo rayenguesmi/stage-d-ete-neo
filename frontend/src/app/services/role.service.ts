@@ -8,6 +8,7 @@ export interface Role {
   displayName: string;
   description: string;
   department?: string;
+  project?: string;
   permissions: string[];
   isActive: boolean;
   isSystemRole?: boolean;

@@ -32,6 +32,14 @@ export class UserService {
     return this.http.patch<User>(`${this.apiUrl}/${userId}/toggle-status`, {});
   }
 
+  updateUser(userId: string, user: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${userId}`, user);
+  }
+
+  getUserById(userId: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${userId}`);
+  }
+
   deleteUser(userId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${userId}`);
   }

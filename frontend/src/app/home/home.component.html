@@ -525,42 +525,43 @@
           <h2><i class="fas fa-history"></i> Activités Récentes</h2>
         </div>
         <div class="card-content">
-          <div class="activities-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Utilisateur</th>
-                  <th>Action</th>
-                  <th>Ressource</th>
-                  <th>Heure</th>
-                  <th>Statut</th>
+          <table class="activities-table">
+            <thead>
+              <tr>
+                <th><i class="fas fa-user"></i> Utilisateur</th>
+                <th><i class="fas fa-cog"></i> Action</th>
+                <th><i class="fas fa-file"></i> Ressource</th>
+                <th><i class="fas fa-project-diagram"></i> Projet</th>
+                <th><i class="fas fa-clock"></i> Heure</th>
+                <th><i class="fas fa-check-circle"></i> Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngIf="recentActivities.length > 0; else noActivities">
+                <tr *ngFor="let activity of recentActivities">
+                  <td>{{ activity.user }}</td>
+                  <td>{{ activity.action }}</td>
+                  <td>{{ activity.resource }}</td>
+                  <td>{{ activity.project }}</td>
+                  <td>{{ activity.time }}</td>
+                  <td>
+                    <span [class]="getStatusClass(activity.status)">
+                      {{ activity.status === 'success' ? 'Succès' : activity.status === 'failed' ? 'Échec' : activity.status }}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngIf="recentActivities.length > 0; else noActivities">
-                  <tr *ngFor="let activity of recentActivities">
-                    <td>{{ activity.user }}</td>
-                    <td>{{ activity.action }}</td>
-                    <td>{{ activity.resource }}</td>
-                    <td>{{ activity.time }}</td>
-                    <td>
-                      <span [class]="getStatusClass(activity.status)">
-                        {{ activity.status === 'success' ? 'Succès' : activity.status === 'failed' ? 'Échec' : activity.status }}
-                      </span>
-                    </td>
-                  </tr>
-                </ng-container>
-                <ng-template #noActivities>
-                  <tr>
-                    <td colspan="5" style="text-align: center; padding: 40px; color: #718096; font-style: italic;">
-                      <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-                      Aucune activité récente disponible
-                    </td>
-                  </tr>
-                </ng-template>
-              </tbody>
-            </table>
-          </div>
+              </ng-container>
+              <ng-template #noActivities>
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px; color: #718096; font-style: italic;">
+                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                    Aucune activité récente disponible
+                  </td>
+                </tr>
+              </ng-template>
+            </tbody>
+          </table>
+        </div>
         </div>
       </div>
 
@@ -645,6 +646,5 @@
         </div>
       </div>
     </div>
-  </div>
 </body>
 </html>

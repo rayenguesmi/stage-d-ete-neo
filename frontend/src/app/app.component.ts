@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { KeycloakService } from 'keycloak-angular';
 import { filter } from 'rxjs/operators';
@@ -14,6 +14,7 @@ export class AppComponent implements OnInit {
   userEmail = '';
   isAdmin = false;
   showNavbar = true;
+  showUserMenu = false;
   private lastUrl = '';
 
   constructor(
@@ -59,7 +60,23 @@ export class AppComponent implements OnInit {
   }
 
   async logout() {
+    this.showUserMenu = false;
     await this.keycloakService.logout(window.location.origin);
+  }
+
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
+  }
+
+  editProfile() {
+    this.showUserMenu = false;
+    this.router.navigate(['/profile']);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    // Fermer le menu si on clique en dehors
+    this.showUserMenu = false;
   }
 }
 

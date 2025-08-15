@@ -11,6 +11,15 @@ export class GestionUtilisateurComponent implements OnInit {
   users: User[] = [];
   errorMessage: string = '';
   openMenuId: string | null = null;
+  isEditing: boolean = false;
+  editingUser: User = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    isActive: true,
+    roles: ['USER']
+  };
 
   newUser: User = {
     firstName: '',
@@ -96,20 +105,57 @@ export class GestionUtilisateurComponent implements OnInit {
     });
   }
 
+  editUser(user: User): void {
+    this.isEditing = true;
+    this.editingUser = { ...user }; // Copie des données de l'utilisateur
+    this.closeMenu();
+  }
+
+  updateUser(): void {
+    if (!this.editingUser.id) return;
+
+    this.userService.updateUser(this.editingUser.id, this.editingUser).subscribe({
+      next: (updatedUser: User) => {
+        // Mettre à jour l'utilisateur dans la liste
+        this.users = this.users.map(u => 
+          u.id === updatedUser.id ? updatedUser : u
+        );
+        
+        this.cancelEdit();
+        this.errorMessage = '';
+        console.log('Utilisateur mis à jour:', updatedUser);
+      },
+      error: (err: any) => {
+        console.error('Erreur de mise à jour:', err);
+        this.errorMessage = "Erreur lors de la mise à jour de l'utilisateur";
+      }
+    });
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.editingUser = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      username: '',
+      isActive: true,
+      roles: ['USER']
+    };
+  }
+
   deleteUser(user: User): void {
     if (!user.id || !confirm("Confirmer la suppression ?")) return;
 
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
-        // Conversion explicite pour éviter les problèmes de type
-        const userIdToDelete = String(user.id);
-        this.users = this.users.filter(u => String(u.id) !== userIdToDelete);
-        
+        // Supprimer l'utilisateur de la liste
+        this.users = this.users.filter(u => u.id !== user.id);
         this.errorMessage = '';
-        console.log('Utilisateur supprimé, nouvelle taille:', this.users.length);
+        console.log('Utilisateur supprimé:', user);
       },
       error: (err: any) => {
-        console.error('Erreur lors de la suppression:', err);
+        console.error('Erreur de suppression:', err);
         this.errorMessage = "Erreur lors de la suppression";
       }
     });
@@ -135,11 +181,7 @@ export class GestionUtilisateurComponent implements OnInit {
     this.closeMenu();
   }
 
-  editUser(user: User): void {
-    // TODO: Implement edit user functionality
-    console.log('Modifier utilisateur:', user);
-    this.closeMenu();
-  }
+
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {

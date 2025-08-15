@@ -21,6 +21,7 @@ export class GestionRolesComponent implements OnInit {
     displayName: '',
     description: '',
     department: '',
+    project: '',
     permissions: [],
     isActive: true,
     adminAccess: false,
@@ -206,11 +207,21 @@ export class GestionRolesComponent implements OnInit {
    * Affiche le formulaire de création
    */
   showCreateForm(): void {
+    this.resetForm();
+    this.showForm = true;
+    console.log('Formulaire de création affiché');
+  }
+
+  /**
+   * Réinitialise le formulaire
+   */
+  resetForm(): void {
     this.currentRole = {
       name: '',
       displayName: '',
       description: '',
       department: '',
+      project: '',
       permissions: [],
       isActive: true,
       adminAccess: false,
@@ -222,11 +233,13 @@ export class GestionRolesComponent implements OnInit {
     };
     this.isEditing = false;
     this.editingRoleId = null;
-    this.showForm = true;
+    this.showForm = false;
+    
+    console.log('Formulaire réinitialisé:', this.currentRole);
   }
 
   /**
-   * Affiche le formulaire de modification
+   * Affiche le formulaire de modification avec données complètes depuis la base
    */
   editRole(role: Role): void {
     if (role.isSystemRole) {
@@ -245,20 +258,138 @@ export class GestionRolesComponent implements OnInit {
       return;
     }
 
-    this.currentRole = { ...role };
-    this.isEditing = true;
-    this.editingRoleId = role.id || null;
-    this.showForm = true;
+    if (!role.id) {
+      this.showError('Impossible de modifier ce rôle : ID manquant');
+      return;
+    }
+
+    // Récupérer les données complètes du rôle depuis la base de données
+    this.roleService.getRoleById(role.id).subscribe({
+      next: (fullRole: Role) => {
+        // Pré-remplir le formulaire avec TOUTES les valeurs existantes
+        // Utiliser Object.assign pour une copie complète et forcer la détection des changements
+        this.currentRole = Object.assign({}, {
+          // Copier toutes les propriétés du rôle existant avec valeurs par défaut
+          id: fullRole.id,
+          name: fullRole.name || '',
+          displayName: fullRole.displayName || '',
+          description: fullRole.description || '',
+          department: fullRole.department || '',
+          project: fullRole.project || '',
+          permissions: fullRole.permissions ? [...fullRole.permissions] : [],
+          isActive: fullRole.isActive !== undefined ? fullRole.isActive : true,
+          isSystemRole: fullRole.isSystemRole || false,
+          createdAt: fullRole.createdAt,
+          updatedAt: fullRole.updatedAt,
+          createdBy: fullRole.createdBy,
+          adminAccess: fullRole.adminAccess !== undefined ? fullRole.adminAccess : false,
+          userManagement: fullRole.userManagement !== undefined ? fullRole.userManagement : false,
+          projectAccess: fullRole.projectAccess !== undefined ? fullRole.projectAccess : false,
+          reportAccess: fullRole.reportAccess !== undefined ? fullRole.reportAccess : false,
+          userId: fullRole.userId || '',
+          userFullName: fullRole.userFullName || ''
+        });
+        
+        console.log('Données du rôle chargées pour édition:', this.currentRole);
+        console.log('Détails des champs:', {
+          name: this.currentRole.name,
+          description: this.currentRole.description,
+          department: this.currentRole.department,
+          project: this.currentRole.project,
+          adminAccess: this.currentRole.adminAccess,
+          userManagement: this.currentRole.userManagement,
+          projectAccess: this.currentRole.projectAccess,
+          reportAccess: this.currentRole.reportAccess,
+          isActive: this.currentRole.isActive,
+          userId: this.currentRole.userId,
+          permissions: this.currentRole.permissions
+        });
+        
+        // S'assurer que le formulaire est correctement initialisé
+        this.isEditing = true;
+        this.editingRoleId = role.id || null;
+        
+        // Forcer la détection des changements pour le binding
+        setTimeout(() => {
+          this.showForm = true;
+          // Forcer la mise à jour du tree view des permissions
+          this.refreshPermissionsView();
+          console.log('Formulaire affiché avec les données:', {
+            name: this.currentRole.name,
+            description: this.currentRole.description,
+            department: this.currentRole.department,
+            project: this.currentRole.project,
+            userId: this.currentRole.userId,
+            permissions: this.currentRole.permissions,
+            adminAccess: this.currentRole.adminAccess,
+            userManagement: this.currentRole.userManagement,
+            projectAccess: this.currentRole.projectAccess,
+            reportAccess: this.currentRole.reportAccess
+          });
+        }, 100);
+        
+        // Afficher un message de confirmation
+        this.showSuccess('Formulaire pré-rempli avec les valeurs actuelles du rôle');
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération du rôle:', error);
+        this.showError('Erreur lors de la récupération des données du rôle');
+        
+        // En cas d'erreur, utiliser les données disponibles localement avec conservation complète
+        this.currentRole = Object.assign({}, {
+          id: role.id,
+          name: role.name || '',
+          displayName: role.displayName || '',
+          description: role.description || '',
+          department: role.department || '',
+          project: role.project || '',
+          permissions: role.permissions ? [...role.permissions] : [],
+          isActive: role.isActive !== undefined ? role.isActive : true,
+          isSystemRole: role.isSystemRole || false,
+          createdAt: role.createdAt,
+          updatedAt: role.updatedAt,
+          createdBy: role.createdBy,
+          adminAccess: role.adminAccess !== undefined ? role.adminAccess : false,
+          userManagement: role.userManagement !== undefined ? role.userManagement : false,
+          projectAccess: role.projectAccess !== undefined ? role.projectAccess : false,
+          reportAccess: role.reportAccess !== undefined ? role.reportAccess : false,
+          userId: role.userId || '',
+          userFullName: role.userFullName || ''
+        });
+        
+        console.log('Données du rôle (fallback local) chargées pour édition:', this.currentRole);
+        this.isEditing = true;
+        this.editingRoleId = role.id || null;
+        
+        // Forcer la détection des changements pour le binding
+        setTimeout(() => {
+          this.showForm = true;
+          // Forcer la mise à jour du tree view des permissions
+          this.refreshPermissionsView();
+          console.log('Formulaire affiché (fallback) avec les données:', {
+            name: this.currentRole.name,
+            description: this.currentRole.description,
+            department: this.currentRole.department,
+            project: this.currentRole.project,
+            userId: this.currentRole.userId,
+            permissions: this.currentRole.permissions,
+            adminAccess: this.currentRole.adminAccess,
+            userManagement: this.currentRole.userManagement,
+            projectAccess: this.currentRole.projectAccess,
+            reportAccess: this.currentRole.reportAccess
+          });
+        }, 100);
+      }
+    });
   }
 
   /**
    * Annule la création/modification
    */
-  cancelForm(): void {
-    this.showForm = false;
-    this.isEditing = false;
-    this.editingRoleId = null;
-    this.clearMessages();
+  cancelEdit(): void {
+    console.log('Annulation de l\'édition');
+    this.resetForm();
+    this.showSuccess('Modification annulée');
   }
 
   /**
@@ -340,7 +471,7 @@ export class GestionRolesComponent implements OnInit {
         });
         this.loadRoles();
         this.loadUsers(); // Recharger les utilisateurs pour mettre à jour la liste
-        this.cancelForm();
+        this.resetForm();
       },
       error: (error) => {
         Swal.fire({
@@ -373,7 +504,7 @@ export class GestionRolesComponent implements OnInit {
         });
         this.loadRoles();
         this.loadUsers(); // Recharger les utilisateurs
-        this.cancelForm();
+        this.resetForm();
       },
       error: (error) => {
         Swal.fire({
@@ -575,6 +706,25 @@ export class GestionRolesComponent implements OnInit {
    */
   isPermissionSelected(permissionName: string): boolean {
     return this.currentRole.permissions.includes(permissionName);
+  }
+
+  /**
+   * Force la mise à jour du tree view des permissions
+   */
+  refreshPermissionsView(): void {
+    // Forcer la détection des changements pour le tree view
+    // Cette méthode s'assure que les permissions sont correctement affichées
+    console.log('Rafraîchissement du tree view des permissions:', this.currentRole.permissions);
+    
+    // Forcer Angular à redétecter les changements dans les checkboxes
+    setTimeout(() => {
+      // Trigger change detection for permission checkboxes
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        const event = new Event('change');
+        checkbox.dispatchEvent(event);
+      });
+    }, 50);
   }
 
   /**

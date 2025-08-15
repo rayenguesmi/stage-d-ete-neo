@@ -102,12 +102,28 @@
         </div>
 
         <div class="form-group">
-          <label for="department">Département / Équipe *</label>
-          <select id="department" [(ngModel)]="currentRole.department" name="department" required class="form-input">
-            <option value="">Sélectionner un département</option>
-            <option value="projet 1">Neolians</option>
-            <option value="projet 2">Vaudoise</option>
-            <option value="projet 3">Projet 3</option>
+          <label for="department">Département / Équipe</label>
+          <input 
+            type="text" 
+            id="department" 
+            [(ngModel)]="currentRole.department" 
+            name="department"
+            placeholder="Ex: IT, RH, Finance..."
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="project">Projet associé</label>
+          <select 
+            id="project" 
+            [(ngModel)]="currentRole.project" 
+            name="project"
+            class="form-input">
+            <option value="">Sélectionner un projet</option>
+            <option value="Projet Neo TM">Projet Neo TM</option>
+            <option value="Projet Vaudoise">Projet Vaudoise</option>
+            <option value="Projet Neoliance">Projet Neoliance</option>
+            <option value="Projet Interne">Projet Interne</option>
           </select>
         </div>
 
@@ -176,7 +192,7 @@
           <button type="submit" class="btn btn-primary">
             {{ isEditing ? 'Modifier l\'assignation' : 'Assigner le rôle' }}
           </button>
-          <button type="button" class="btn btn-secondary" (click)="cancelForm()">
+          <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
             Annuler
           </button>
         </div>
@@ -194,6 +210,7 @@
           <th>Rôle attribué</th>
           <th>Description du rôle</th>
           <th>Département / Équipe</th>
+          <th>Projet</th>
           <th>Type</th>
           <th>Permissions</th>
           <th>Statut du rôle</th>
@@ -221,6 +238,12 @@
           </td>
           <td>
             {{ role.department }}
+          </td>
+          <td>
+            <span class="project-badge" *ngIf="role.project">
+              {{ role.project }}
+            </span>
+            <span class="no-project" *ngIf="!role.project">-</span>
           </td>
           <td>
             <span class="badge" [class.system]="role.isSystemRole" [class.custom]="!role.isSystemRole">
